@@ -24,7 +24,8 @@ if (file_exists($envFile)) {
 
 // Import server-provided env vars (Railway, PHP-FPM, etc.)
 $envVars = ['DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD',
-            'DATABASE_URL', 'APP_ENV', 'APP_DEBUG', 'APP_URL',
+            'DATABASE_URL', 'MYSQL_URL', 'JAWSDB_URL', 'CLEARDB_DATABASE_URL',
+            'APP_ENV', 'APP_DEBUG', 'APP_URL',
             'PAYSTACK_PUBLIC_KEY', 'PAYSTACK_SECRET_KEY', 'PAYSTACK_WEBHOOK_SECRET',
             'MAIL_HOST', 'MAIL_PORT', 'MAIL_USERNAME', 'MAIL_PASSWORD',
             'MAIL_FROM_ADDRESS', 'MAIL_FROM_NAME'];

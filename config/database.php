@@ -12,6 +12,16 @@ $default = [
 ];
 
 $databaseUrl = getenv('DATABASE_URL') ?: ($_ENV['DATABASE_URL'] ?? $_SERVER['DATABASE_URL'] ?? '');
+// Also check common Railway MySQL env var names
+if (!$databaseUrl) {
+    $databaseUrl = getenv('MYSQL_URL') ?: ($_ENV['MYSQL_URL'] ?? $_SERVER['MYSQL_URL'] ?? '');
+}
+if (!$databaseUrl) {
+    $databaseUrl = getenv('JAWSDB_URL') ?: ($_ENV['JAWSDB_URL'] ?? $_SERVER['JAWSDB_URL'] ?? '');
+}
+if (!$databaseUrl) {
+    $databaseUrl = getenv('CLEARDB_DATABASE_URL') ?: ($_ENV['CLEARDB_DATABASE_URL'] ?? $_SERVER['CLEARDB_DATABASE_URL'] ?? '');
+}
 if ($databaseUrl) {
     $parts = parse_url($databaseUrl);
     if ($parts && isset($parts['scheme'])) {

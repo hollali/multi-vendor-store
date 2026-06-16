@@ -30,7 +30,24 @@ class Database
                 $config = require __DIR__ . '/../../config/database.php';
                 $config = $config['connections'][$config['default']];
             }
-            self::$instance = new self($config);
+            try {
+                self::$instance = new self($config);
+            } catch (\PDOException $e) {
+                $debug = [
+                    'driver' => $config['driver'] ?? 'mysql',
+                    'host' => $config['host'] ?? 'not set',
+                    'port' => $config['port'] ?? 'not set',
+                    'database' => $config['database'] ?? 'not set',
+                    'username' => $config['username'] ?? 'not set',
+                    'charset' => $config['charset'] ?? 'not set',
+                    'DATABASE_URL' => getenv('DATABASE_URL') ?: ($_ENV['DATABASE_URL'] ?? $_SERVER['DATABASE_URL'] ?? 'NOT SET'),
+                    'DB_HOST' => getenv('DB_HOST') ?: ($_ENV['DB_HOST'] ?? $_SERVER['DB_HOST'] ?? 'NOT SET'),
+                    'error' => $e->getMessage(),
+                ];
+                throw new \RuntimeException(
+                    'Database connection failed: ' . $e->getMessage() . ' | Config: ' . json_encode($debug)
+                );
+            }
         }
         return self::$instance;
     }
