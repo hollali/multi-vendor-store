@@ -1,5 +1,6 @@
 <?php require __DIR__ . '/../layouts/header.php'; ?>
 
+<div id="home-content" class="w-full">
 <!-- Hero Carousel -->
 <section class="relative bg-gray-100 dark:bg-gray-900 overflow-hidden">
     <div id="hero-carousel" class="relative w-full h-[50vw] min-h-[280px] max-h-[600px]">
@@ -211,5 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
     interval = setInterval(next, 5000);
 });
 </script>
+
+</div>
 
 <?php require __DIR__ . '/../layouts/footer.php'; ?>
