@@ -2,14 +2,14 @@
 <?php $activeMenu = 'overview'; ?>
 <?php require __DIR__ . '/../layouts/sidebar.php'; ?>
 
-<div class="flex-1 p-4 md:p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
-    <div class="max-w-7xl mx-auto">
-        <div class="mb-6">
-            <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Welcome back, <?= htmlspecialchars(explode(' ', $user->name ?? $user['name'] ?? 'Admin')[0]) ?>! Here's your platform overview.</p>
+<div class="flex-1 p-4 md:p-6 lg:p-8 xl:p-10 bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div class="mx-auto">
+        <div class="mb-6 lg:mb-8">
+            <h1 class="text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
+            <p class="text-sm lg:text-base text-gray-500 dark:text-gray-400 mt-1">Welcome back, <?= htmlspecialchars(explode(' ', $user->name ?? $user['name'] ?? 'Admin')[0]) ?>! Here's your platform overview.</p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-5 mb-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-5 xl:gap-6 mb-6 lg:mb-8 xl:mb-10">
             <?php
             $cards = [
                 ['label' => 'Total Users', 'value' => number_format($totalUsers ?? 0), 'icon' => 'fa-users', 'from' => 'from-blue-600', 'to' => 'to-blue-400'],
@@ -21,7 +21,7 @@
             ];
             ?>
             <?php foreach ($cards as $card): ?>
-                <div class="relative overflow-hidden rounded-xl shadow-sm bg-white dark:bg-gray-800 p-4 lg:p-5 group hover:shadow-md transition">
+                <div class="relative overflow-hidden rounded-xl shadow-sm bg-white dark:bg-gray-800 p-4 lg:p-5 xl:p-6 group hover:shadow-md transition">
                     <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br <?= $card['from'] ?> <?= $card['to'] ?> opacity-10 rounded-bl-full"></div>
                     <div class="flex items-center justify-between">
                         <div>
@@ -36,20 +36,20 @@
             <?php endforeach; ?>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-6 lg:mb-8 xl:mb-10">
             <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Monthly Revenue</h2>
+                <div class="px-5 lg:px-6 xl:px-8 py-4 lg:py-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                    <h2 class="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white">Monthly Revenue</h2>
                     <span class="text-xs text-gray-400">Last 12 months</span>
                 </div>
-                <div class="p-5">
+                <div class="p-5 lg:p-6 xl:p-8">
                     <canvas id="revenueChart" height="250"></canvas>
                 </div>
             </div>
 
-            <div class="space-y-6">
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Best Selling Products</h2>
+            <div class="space-y-6 lg:space-y-8">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 lg:p-6 xl:p-8">
+                    <h2 class="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white mb-4">Best Selling Products</h2>
                     <?php $bestSellers = $bestSellers ?? $stats['best_selling'] ?? []; ?>
                     <?php if (empty($bestSellers)): ?>
                         <p class="text-sm text-gray-400 dark:text-gray-500 text-center py-6">No sales data yet</p>
@@ -68,8 +68,8 @@
                     <?php endif; ?>
                 </div>
 
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Vendors</h2>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 lg:p-6 xl:p-8">
+                    <h2 class="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white mb-4">Top Vendors</h2>
                     <?php $topVendors = $topVendors ?? $stats['top_vendors'] ?? []; ?>
                     <?php if (empty($topVendors)): ?>
                         <p class="text-sm text-gray-400 dark:text-gray-500 text-center py-6">No vendor data yet</p>
@@ -91,8 +91,8 @@
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Orders</h2>
+            <div class="px-5 lg:px-6 xl:px-8 py-4 lg:py-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <h2 class="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white">Recent Orders</h2>
                 <a href="/admin/orders" class="text-sm text-primary-700 dark:text-primary-400 hover:underline font-medium">View All</a>
             </div>
             <?php $recentOrders = $recentOrders ?? $stats['recent_orders'] ?? []; ?>

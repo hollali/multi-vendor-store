@@ -2,8 +2,8 @@
 <?php $activeMenu = 'settings'; ?>
 <?php require __DIR__ . '/../layouts/sidebar.php'; ?>
 
-<div class="flex-1 p-4 md:p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
-    <div class="max-w-4xl mx-auto">
+<div class="flex-1 p-4 md:p-6 lg:p-8 xl:p-10 bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div class="mx-auto">
         <div class="mb-6">
             <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">Site Settings</h1>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Configure your platform settings.</p>

@@ -2,8 +2,8 @@
 <?php $activeMenu = 'brands'; ?>
 <?php require __DIR__ . '/../layouts/sidebar.php'; ?>
 
-<div class="flex-1 p-4 md:p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
-    <div class="max-w-7xl mx-auto">
+<div class="flex-1 p-4 md:p-6 lg:p-8 xl:p-10 bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div class="mx-auto">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
             <div>
                 <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">Brands</h1>

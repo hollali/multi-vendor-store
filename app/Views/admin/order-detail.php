@@ -2,8 +2,8 @@
 <?php $activeMenu = 'orders'; ?>
 <?php require __DIR__ . '/../layouts/sidebar.php'; ?>
 
-<div class="flex-1 p-4 md:p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
-    <div class="max-w-7xl mx-auto">
+<div class="flex-1 p-4 md:p-6 lg:p-8 xl:p-10 bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div class="mx-auto">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
             <div>
                 <a href="/admin/orders" class="text-sm text-primary-700 dark:text-primary-400 hover:underline mb-1 inline-block"><i class="fas fa-arrow-left mr-1"></i> Back to Orders</a>

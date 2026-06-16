@@ -1,5 +1,5 @@
-<aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 lg:w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen overflow-y-auto flex-shrink-0 transition-transform duration-300 ease-in-out -translate-x-full md:sticky md:top-0 md:translate-x-0 md:flex md:flex-col">
-    <div class="p-4 lg:p-5 border-b border-gray-200 dark:border-gray-800">
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 lg:w-80 xl:w-96 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen overflow-y-auto flex-shrink-0 transition-transform duration-300 ease-in-out -translate-x-full md:sticky md:top-0 md:translate-x-0 md:flex md:flex-col">
+    <div class="p-4 lg:p-6 xl:p-8 border-b border-gray-200 dark:border-gray-800">
         <a href="/" class="flex items-center gap-2 mb-4">
             <span class="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-primary-700 to-primary-500 rounded-lg shadow-md">
                 <i class="fas fa-bolt text-white text-sm"></i>
@@ -17,7 +17,7 @@
         </div>
     </div>
 
-    <nav class="flex-1 p-3 lg:p-4 space-y-1 overflow-y-auto">
+    <nav class="flex-1 p-3 lg:p-4 xl:p-5 space-y-1 overflow-y-auto">
         <?php
         $role = $userRole ?? $session->getUserRole() ?? 'customer';
         $activeMenu = $activeMenu ?? 'overview';
