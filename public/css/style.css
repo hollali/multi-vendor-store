@@ -1,0 +1,284 @@
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Smooth scroll */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Dashboard sidebar */
+.sidebar {
+    transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+}
+
+.sidebar-collapsed {
+    transform: translateX(-100%);
+}
+
+@media (min-width: 768px) {
+    .sidebar-collapsed {
+        transform: translateX(0);
+        width: 64px;
+    }
+}
+
+/* Product card hover */
+.product-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+.product-card img {
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover img {
+    transform: scale(1.05);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.animate-slideUp {
+    animation: slideUp 0.3s ease forwards;
+}
+
+.animate-slideDown {
+    animation: slideDown 0.3s ease forwards;
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Toast notification */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    min-width: 300px;
+    max-width: 450px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(120%);
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    opacity: 0;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast-success {
+    background: #059669;
+}
+
+.toast-error {
+    background: #DC2626;
+}
+
+.toast-info {
+    background: #2563EB;
+}
+
+.toast-warning {
+    background: #D97706;
+}
+
+/* Custom focus ring */
+*:focus-visible {
+    outline: 2px solid #3B82F6;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        font-size: 12pt;
+        color: #000;
+        background: #fff;
+    }
+
+    .print-only {
+        display: block !important;
+    }
+
+    a[href]::after {
+        content: " (" attr(href) ")";
+        font-size: 0.8em;
+        color: #666;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td {
+        border: 1px solid #000;
+        padding: 8px;
+    }
+
+    .invoice-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .invoice-details {
+        margin-bottom: 20px;
+    }
+}
+
+.print-only {
+    display: none;
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 639px) {
+    /* Tables as cards on very small screens */
+    .table-card-sm {
+        display: block;
+        overflow: hidden;
+    }
+    .table-card-sm thead {
+        display: none;
+    }
+    .table-card-sm tbody,
+    .table-card-sm tr,
+    .table-card-sm td {
+        display: block;
+    }
+    .table-card-sm tr {
+        padding: 12px 16px;
+        margin-bottom: 8px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .dark .table-card-sm tr {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    .table-card-sm td {
+        padding: 6px 0;
+        border: none !important;
+    }
+    .table-card-sm td[data-label]::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #9ca3af;
+        margin-bottom: 2px;
+    }
+    .table-card-sm td[data-label] {
+        text-align: left;
+    }
+}
+
+/* Better touch targets for mobile */
+@media (pointer: coarse) {
+    button, a, select, input[type="checkbox"], input[type="radio"] {
+        min-height: 44px;
+    }
+    .nav-link {
+        padding: 12px 16px;
+    }
+}
+
+/* Table horizontal scroll hint */
+.overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* Mobile nav animation */
+#mobile-nav {
+    transition: max-height 0.3s ease-in-out, opacity 0.2s ease-in-out;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+}
+#mobile-nav:not(.hidden) {
+    max-height: 500px;
+    opacity: 1;
+}
+
+/* Sidebar backdrop blur support */
+@supports (backdrop-filter: blur(4px)) {
+    #sidebarOverlay {
+        backdrop-filter: blur(2px);
+    }
+}
