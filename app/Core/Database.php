@@ -9,12 +9,18 @@ class Database
     private function __construct(array $config)
     {
         $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']};charset={$config['charset']}";
-        $this->pdo = new \PDO($dsn, $config['username'], $config['password'], [
+        $options = [
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_OBJ,
             \PDO::ATTR_EMULATE_PREPARES => false,
-            \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
-        ]);
+        ];
+        if (defined('PDO::MYSQL_ATTR_INIT_COMMAND')) {
+            $options[\PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci";
+        }
+        $this->pdo = new \PDO($dsn, $config['username'], $config['password'], $options);
+        if (!defined('PDO::MYSQL_ATTR_INIT_COMMAND')) {
+            $this->pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
+        }
     }
 
     public static function getInstance(?array $config = null): self
