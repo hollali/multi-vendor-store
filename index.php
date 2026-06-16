@@ -147,6 +147,9 @@ $router->get('/admin/settings', 'AdminController@settings', 'admin');
 $router->post('/admin/settings', 'AdminController@updateSettings', 'admin');
 $router->get('/admin/notifications', 'AdminController@notifications', 'admin');
 $router->post('/admin/notifications/send', 'AdminController@sendNotification', 'admin');
+$router->get('/admin/profile', 'AdminController@profile', 'admin');
+$router->post('/admin/profile', 'AdminController@updateProfile', 'admin');
+$router->post('/admin/profile/password', 'AdminController@updatePassword', 'admin');
 
 // API
 $router->get('/api/products', 'ApiController@products');

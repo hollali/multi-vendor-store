@@ -134,6 +134,9 @@
             <a href="/admin/notifications" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-r-lg transition <?= isActive('notifications', $activeMenu) ?>">
                 <i class="fas fa-bell w-4 text-center"></i><span>Notifications</span>
             </a>
+            <a href="/admin/profile" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-r-lg transition <?= isActive('profile', $activeMenu) ?>">
+                <i class="fas fa-user-cog w-4 text-center"></i><span>Profile</span>
+            </a>
             <hr class="my-2 border-gray-100 dark:border-gray-800">
             <a href="/logout" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-r-lg transition text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border-l-4 border-transparent hover:border-red-500">
                 <i class="fas fa-sign-out-alt w-4 text-center"></i><span>Logout</span>

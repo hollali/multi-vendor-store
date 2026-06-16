@@ -1016,4 +1016,83 @@ class AdminController extends Controller
             'success'
         );
     }
+
+    public function profile(): void
+    {
+        $db = Database::getInstance();
+        $userId = $this->session->getUserId();
+        $user = $db->fetch("SELECT * FROM users WHERE id = :id", ['id' => $userId]);
+
+        $this->renderView('admin/profile', [
+            'profileUser' => $user,
+        ]);
+    }
+
+    public function updateProfile(): void
+    {
+        $db = Database::getInstance();
+        $userId = $this->session->getUserId();
+
+        $firstName = Validator::sanitizeString($this->getParam('first_name', ''));
+        $lastName = Validator::sanitizeString($this->getParam('last_name', ''));
+        $phone = Validator::sanitizeString($this->getParam('phone', ''));
+
+        $this->validator->validate([
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'phone' => $phone,
+        ], [
+            'first_name' => 'required|min:1|max:100',
+            'last_name' => 'required|min:1|max:100',
+            'phone' => 'required|min:5|max:20',
+        ]);
+
+        if ($this->validator->fails()) {
+            $this->redirectWith('/admin/profile', implode(', ', $this->validator->getErrors()), 'error');
+            return;
+        }
+
+        $db->update('users', [
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'phone' => $phone,
+        ], 'id = :id', ['id' => $userId]);
+
+        $updatedUser = $db->fetch("SELECT * FROM users WHERE id = :id", ['id' => $userId]);
+        $this->session->setUser($updatedUser);
+
+        $this->redirectWith('/admin/profile', 'Profile updated successfully.', 'success');
+    }
+
+    public function updatePassword(): void
+    {
+        $db = Database::getInstance();
+        $userId = $this->session->getUserId();
+        $user = User::find($userId);
+
+        $currentPassword = $this->getParam('current_password', '');
+        $newPassword = $this->getParam('new_password', '');
+        $confirmPassword = $this->getParam('confirm_password', '');
+
+        if (!password_verify($currentPassword, $user->password)) {
+            $this->redirectWith('/admin/profile', 'Current password is incorrect.', 'error');
+            return;
+        }
+
+        $this->validator->validate(
+            ['new_password' => $newPassword, 'confirm_password' => $confirmPassword],
+            ['new_password' => 'required|min:6', 'confirm_password' => 'required|matches:new_password']
+        );
+
+        if ($this->validator->fails()) {
+            $this->redirectWith('/admin/profile', implode(', ', $this->validator->getErrors()), 'error');
+            return;
+        }
+
+        User::update($userId, [
+            'password' => password_hash($newPassword, PASSWORD_DEFAULT),
+        ]);
+
+        $this->redirectWith('/admin/profile', 'Password updated successfully.', 'success');
+    }
 }

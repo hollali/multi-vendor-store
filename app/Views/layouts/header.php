@@ -114,7 +114,8 @@ foreach (['success', 'error', 'warning', 'info'] as $type) {
                                     <a href="<?= $dashboardUrl ?>" class="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition"><i class="fas fa-th-large w-4 text-gray-400"></i>Dashboard</a>
                                     <a href="<?= $site_url ?? '' ?>/orders" class="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition"><i class="fas fa-box w-4 text-gray-400"></i>Orders</a>
                                     <hr class="my-1 border-gray-100 dark:border-gray-700">
-                                    <a href="<?= $site_url ?? '' ?>/profile" class="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition"><i class="fas fa-user-cog w-4 text-gray-400"></i>Profile Settings</a>
+                                    <?php $profileUrls = ['customer' => '/dashboard/profile', 'vendor' => '/vendor/profile', 'admin' => '/admin/profile']; ?>
+                                    <a href="<?= $profileUrls[$userRole] ?? '/dashboard/profile' ?>" class="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition"><i class="fas fa-user-cog w-4 text-gray-400"></i>Profile Settings</a>
                                     <a href="<?= $site_url ?? '' ?>/logout" class="flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"><i class="fas fa-sign-out-alt w-4"></i>Logout</a>
                                 </div>
                             </div>
