@@ -103,6 +103,14 @@ class AdminController extends Controller
             "SELECT COALESCE(SUM(total), 0) as total FROM orders WHERE payment_status = 'paid'"
         )->total ?? 0);
 
+        $pendingProducts = (int)($db->fetch(
+            "SELECT COUNT(*) as count FROM products WHERE status = 'pending'"
+        )->count ?? 0);
+
+        $pendingWithdrawals = (float)($db->fetch(
+            "SELECT COALESCE(SUM(amount), 0) as total FROM withdrawals WHERE status = 'pending'"
+        )->total ?? 0);
+
         $monthlyRevenue = $db->fetchAll(
             "SELECT DATE_FORMAT(created_at, '%Y-%m') as month,
                     SUM(total) as revenue,
@@ -153,6 +161,8 @@ class AdminController extends Controller
             'totalVendors' => $totalVendors,
             'totalOrders' => $totalOrders,
             'totalRevenue' => $totalRevenue,
+            'pendingProducts' => $pendingProducts,
+            'pendingWithdrawals' => $pendingWithdrawals,
             'monthlyRevenue' => $monthlyRevenue,
             'recentOrders' => $recentOrders,
             'bestSellers' => $bestSellers,

@@ -5,7 +5,7 @@ class Controller
 {
     protected Session $session;
     protected Validator $validator;
-    protected ?array $currentUser = null;
+    protected array|\stdClass|null $currentUser = null;
 
     public function __construct()
     {
@@ -60,7 +60,7 @@ class Controller
                 function ($m) use ($basePath) {
                     $path = $m[2];
                     if (str_starts_with($path, $basePath . '/') || $path === $basePath) return $m[0];
-                    if (preg_match('#^https?://|//|#|javascript:|mailto:#', $path)) return $m[0];
+                    if (preg_match('~^(https?:|//|#|javascript:|mailto:)~', $path)) return $m[0];
                     return $m[1] . '="' . $basePath . $path . '"';
                 },
                 $html

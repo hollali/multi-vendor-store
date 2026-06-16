@@ -6,19 +6,18 @@
     <div class="max-w-7xl mx-auto">
         <div class="mb-6">
             <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Welcome back, <?= htmlspecialchars(explode(' ', $admin->name ?? $admin['name'] ?? 'Admin')[0]) ?>! Here's your platform overview.</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Welcome back, <?= htmlspecialchars(explode(' ', $user->name ?? $user['name'] ?? 'Admin')[0]) ?>! Here's your platform overview.</p>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-5 mb-6">
             <?php
-            $stats = $stats ?? [];
             $cards = [
-                ['label' => 'Total Users', 'value' => number_format($stats['total_users'] ?? 0), 'icon' => 'fa-users', 'from' => 'from-blue-600', 'to' => 'to-blue-400'],
-                ['label' => 'Total Vendors', 'value' => number_format($stats['total_vendors'] ?? 0), 'icon' => 'fa-store', 'from' => 'from-purple-600', 'to' => 'to-purple-400'],
-                ['label' => 'Total Orders', 'value' => number_format($stats['total_orders'] ?? 0), 'icon' => 'fa-clipboard-list', 'from' => 'from-green-600', 'to' => 'to-green-400'],
-                ['label' => 'Total Revenue', 'value' => 'GH₵ ' . number_format($stats['total_revenue'] ?? 0, 2), 'icon' => 'fa-credit-card', 'from' => 'from-orange-600', 'to' => 'to-orange-400'],
-                ['label' => 'Pending Products', 'value' => number_format($stats['pending_products'] ?? 0), 'icon' => 'fa-clock', 'from' => 'from-yellow-600', 'to' => 'to-yellow-400'],
-                ['label' => 'Pending Withdrawals', 'value' => 'GH₵ ' . number_format($stats['pending_withdrawals'] ?? 0, 2), 'icon' => 'fa-wallet', 'from' => 'from-red-600', 'to' => 'to-red-400'],
+                ['label' => 'Total Users', 'value' => number_format($totalUsers ?? 0), 'icon' => 'fa-users', 'from' => 'from-blue-600', 'to' => 'to-blue-400'],
+                ['label' => 'Total Vendors', 'value' => number_format($totalVendors ?? 0), 'icon' => 'fa-store', 'from' => 'from-purple-600', 'to' => 'to-purple-400'],
+                ['label' => 'Total Orders', 'value' => number_format($totalOrders ?? 0), 'icon' => 'fa-clipboard-list', 'from' => 'from-green-600', 'to' => 'to-green-400'],
+                ['label' => 'Total Revenue', 'value' => 'GH₵ ' . number_format($totalRevenue ?? 0, 2), 'icon' => 'fa-credit-card', 'from' => 'from-orange-600', 'to' => 'to-orange-400'],
+                ['label' => 'Pending Products', 'value' => number_format($pendingProducts ?? 0), 'icon' => 'fa-clock', 'from' => 'from-yellow-600', 'to' => 'to-yellow-400'],
+                ['label' => 'Pending Withdrawals', 'value' => 'GH₵ ' . number_format($pendingWithdrawals ?? 0, 2), 'icon' => 'fa-wallet', 'from' => 'from-red-600', 'to' => 'to-red-400'],
             ];
             ?>
             <?php foreach ($cards as $card): ?>

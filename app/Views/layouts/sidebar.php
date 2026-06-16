@@ -44,7 +44,7 @@
             <a href="/reviews" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-r-lg transition <?= isActive('reviews', $activeMenu) ?>">
                 <i class="fas fa-star w-4 text-center"></i><span>Reviews</span>
             </a>
-            <a href="/notifications" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-r-lg transition <?= isActive('notifications', $activeMenu) ?>">
+            <a href="/dashboard/notifications" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-r-lg transition <?= isActive('notifications', $activeMenu) ?>">
                 <i class="fas fa-bell w-4 text-center"></i><span>Notifications</span>
             </a>
             <hr class="my-2 border-gray-100 dark:border-gray-800">
@@ -85,7 +85,7 @@
             <a href="/vendor/store-settings" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-r-lg transition <?= isActive('store-settings', $activeMenu) ?>">
                 <i class="fas fa-store w-4 text-center"></i><span>Store Settings</span>
             </a>
-            <a href="/notifications" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-r-lg transition <?= isActive('notifications', $activeMenu) ?>">
+            <a href="/vendor/notifications" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-r-lg transition <?= isActive('notifications', $activeMenu) ?>">
                 <i class="fas fa-bell w-4 text-center"></i><span>Notifications</span>
             </a>
             <a href="/profile" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-r-lg transition <?= isActive('profile', $activeMenu) ?>">
@@ -95,7 +95,6 @@
             <a href="/logout" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-r-lg transition text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border-l-4 border-transparent hover:border-red-500">
                 <i class="fas fa-sign-out-alt w-4 text-center"></i><span>Logout</span>
             </a>
-
         <?php elseif ($role === 'admin'): ?>
             <div class="text-[11px] uppercase tracking-widest text-gray-400 dark:text-gray-600 font-semibold px-3 pt-4 pb-2">Admin Dashboard</div>
             <a href="/admin/dashboard" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-r-lg transition <?= isActive('overview', $activeMenu) ?>">
@@ -132,7 +131,7 @@
             <a href="/admin/settings" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-r-lg transition <?= isActive('settings', $activeMenu) ?>">
                 <i class="fas fa-cog w-4 text-center"></i><span>Settings</span>
             </a>
-            <a href="/notifications" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-r-lg transition <?= isActive('notifications', $activeMenu) ?>">
+            <a href="/admin/notifications" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-r-lg transition <?= isActive('notifications', $activeMenu) ?>">
                 <i class="fas fa-bell w-4 text-center"></i><span>Notifications</span>
             </a>
             <hr class="my-2 border-gray-100 dark:border-gray-800">

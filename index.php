@@ -5,9 +5,9 @@ use App\Core\Session;
 use App\Core\Router;
 use App\Core\Middleware;
 
-$dotenv = __DIR__ . '/.env';
-if (file_exists($dotenv)) {
-    $lines = file($dotenv, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+$envFile = __DIR__ . '/.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
         if (str_starts_with(trim($line), '#')) continue;
         if (str_contains($line, '=')) {
@@ -19,6 +19,20 @@ if (file_exists($dotenv)) {
                 $_ENV[$key] = $value;
             }
         }
+    }
+}
+
+// Import server-provided env vars (Railway, PHP-FPM, etc.)
+$envVars = ['DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD',
+            'DATABASE_URL', 'APP_ENV', 'APP_DEBUG', 'APP_URL',
+            'PAYSTACK_PUBLIC_KEY', 'PAYSTACK_SECRET_KEY', 'PAYSTACK_WEBHOOK_SECRET',
+            'MAIL_HOST', 'MAIL_PORT', 'MAIL_USERNAME', 'MAIL_PASSWORD',
+            'MAIL_FROM_ADDRESS', 'MAIL_FROM_NAME'];
+foreach ($envVars as $key) {
+    $value = $_SERVER[$key] ?? $_ENV[$key] ?? null;
+    if ($value !== null && $value !== '' && getenv($key) === false) {
+        putenv("{$key}={$value}");
+        $_ENV[$key] = $value;
     }
 }
 
@@ -151,7 +165,7 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 try {
     $router->resolve($uri, $method);
-} catch (\Exception $e) {
+} catch (\Throwable $e) {
     http_response_code(500);
     header('Content-Type: application/json');
     echo json_encode([

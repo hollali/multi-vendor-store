@@ -60,7 +60,7 @@
                 <h3 class="text-white font-bold text-sm uppercase tracking-wider mb-4 mt-6">Newsletter</h3>
                 <p class="text-sm text-gray-400 mb-3">Get the latest deals and offers.</p>
                 <form action="/newsletter/subscribe" method="POST" class="flex gap-2">
-                    <input type="hidden name="_csrf_token" value="<?= htmlspecialchars($_SESSION['_csrf_token'] ?? '') ?>">
+                    <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($_SESSION['_csrf_token'] ?? '') ?>">
                     <input type="email" name="email" placeholder="Your email" required class="flex-1 px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                     <button type="submit" class="px-4 py-2.5 bg-primary-700 hover:bg-primary-800 text-white text-sm font-medium rounded-lg transition shadow-sm"><i class="fas fa-paper-plane"></i></button>
                 </form>
