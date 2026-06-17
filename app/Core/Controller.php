@@ -43,6 +43,7 @@ class Controller
         $data['url'] = function ($path) use ($basePath) {
             return $basePath . '/' . ltrim($path, '/');
         };
+        $data['site_url'] = $basePath;
 
         extract($data);
         $viewPath = __DIR__ . "/../Views/{$view}.php";

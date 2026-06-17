@@ -926,7 +926,7 @@ class VendorController extends Controller
         if (!empty($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
             $logoPath = $this->handleImageUpload($_FILES['logo'], 'stores');
             if ($logoPath) {
-                $this->deleteImageFile($store->logo);
+                if (!empty($store->logo)) $this->deleteImageFile($store->logo);
                 $updateData['logo'] = $logoPath;
             }
         }
@@ -934,7 +934,7 @@ class VendorController extends Controller
         if (!empty($_FILES['banner']) && $_FILES['banner']['error'] === UPLOAD_ERR_OK) {
             $bannerPath = $this->handleImageUpload($_FILES['banner'], 'stores');
             if ($bannerPath) {
-                $this->deleteImageFile($store->banner);
+                if (!empty($store->banner)) $this->deleteImageFile($store->banner);
                 $updateData['banner'] = $bannerPath;
             }
         }

@@ -295,7 +295,7 @@ class CheckoutController extends Controller
         }
 
         $result = json_decode($response, true);
-        if (!$result['status']) {
+        if (!is_array($result) || !($result['status'] ?? false)) {
             $db->update('payments', ['status' => 'failed'], 'id = :id', ['id' => $paymentId]);
             $db->update('orders', ['status' => 'failed'], 'id = :id', ['id' => $orderId]);
             $this->redirectWith('/checkout', $result['message'] ?? 'Payment initialization failed.', 'error');
@@ -304,7 +304,7 @@ class CheckoutController extends Controller
 
         $this->session->set('pending_order_id', $orderId);
 
-        $this->redirect($result['data']['authorization_url']);
+        $this->redirect($result['data']['authorization_url'] ?? '/checkout');
     }
 
     public function callback(): void
@@ -339,7 +339,7 @@ class CheckoutController extends Controller
         }
 
         $result = json_decode($response, true);
-        if (!$result['status'] || !$result['data']['status']) {
+        if (!is_array($result) || !($result['status'] ?? false) || !($result['data']['status'] ?? false)) {
             $this->redirectWith('/orders', 'Payment verification failed.', 'error');
             return;
         }
@@ -416,7 +416,7 @@ class CheckoutController extends Controller
         }
 
         $event = $payload['event'];
-        $data = $payload['data'];
+        $data = $payload['data'] ?? [];
 
         if ($event === 'charge.success') {
             $reference = $data['reference'] ?? '';
