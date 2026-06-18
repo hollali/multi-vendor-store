@@ -14,11 +14,13 @@ class Database
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_OBJ,
             \PDO::ATTR_EMULATE_PREPARES => false,
         ];
-        if (defined('PDO::MYSQL_ATTR_INIT_COMMAND')) {
+        if (defined('\PDO\Mysql::ATTR_INIT_COMMAND')) {
+            $options[\PDO\Mysql::ATTR_INIT_COMMAND] = "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci";
+        } elseif (defined('PDO::MYSQL_ATTR_INIT_COMMAND')) {
             $options[\PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci";
         }
         $this->pdo = new \PDO($dsn, $config['username'], $config['password'], $options);
-        if (!defined('PDO::MYSQL_ATTR_INIT_COMMAND')) {
+        if (!defined('\PDO\Mysql::ATTR_INIT_COMMAND') && !defined('PDO::MYSQL_ATTR_INIT_COMMAND')) {
             $this->pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
         }
     }
