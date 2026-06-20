@@ -2,7 +2,7 @@
 
 ## Overview
 
-Celer Market is built on a custom PHP MVC framework — no third-party PHP frameworks like Laravel or Symfony. This architecture was chosen to keep the application lightweight, fully understandable, and free from framework lock-in. The entire core framework is approximately 650 lines of PHP across 7 files.
+The Middle Man is built on a custom PHP MVC framework — no third-party PHP frameworks like Laravel or Symfony. This architecture was chosen to keep the application lightweight, fully understandable, and free from framework lock-in. The entire core framework is approximately 650 lines of PHP across 7 files.
 
 ---
 
@@ -69,6 +69,7 @@ HTML response sent to browser
 The router maps HTTP method + URI patterns to controller actions.
 
 **Key design:**
+
 - Routes registered via fluent methods: `$router->get('/path', 'Controller@action', 'middleware')`
 - URI patterns support `{param}` placeholders → extracted as named regex groups
 - Middleware is a string name → mapped to a static method on `Middleware` class
@@ -94,6 +95,7 @@ Base controller providing shared functionality to all 10 application controllers
 | `isPost()` | Check if request method is POST |
 
 **View rendering:**
+
 - `extract($data)` makes variables available in the view scope
 - Output buffering captures the rendered HTML
 - A URL-rewriting pass prepends `$basePath` to relative URLs (for subdirectory deployments like XAMPP/LAMPP)
@@ -115,6 +117,7 @@ Base model with an active-record-style query builder and static CRUD methods.
 | `Model::paginate($perPage, $page)` | Paginate with total/lastPage/from/to |
 
 **Fluent query builder:**
+
 ```php
 Product::where('category_id', $catId)
     ->where('is_active', 1)
@@ -147,6 +150,7 @@ PDO singleton wrapper providing a clean query interface.
 Singleton session manager.
 
 **Key features:**
+
 - Secure cookie params: HTTP-only, SameSite=Lax, HTTPS-only when applicable
 - Flash messages: set once, retrieved once (`getFlash` auto-deletes)
 - User state: `setUser()`, `getUser()`, `isAuthenticated()`, `getUserRole()`
@@ -156,15 +160,15 @@ Singleton session manager.
 
 Request filters executed before controller actions.
 
-| Middleware | Behavior |
-|------------|----------|
-| `auth` | Redirects to /login if not authenticated; returns 401 for AJAX |
-| `guest` | Redirects to /dashboard if already authenticated |
-| `admin` | Returns 403 (or redirects) if role !== 'admin' |
-| `vendor` | Redirects to /dashboard if role !== 'vendor' |
-| `customer` | Redirects if role !== 'customer' |
-| `csrf` | Validates CSRF token from POST body or X-CSRF-TOKEN header; returns 419 on mismatch |
-| `rateLimit($key)` | Max 5 attempts per 15 minutes per session key |
+| Middleware        | Behavior                                                                            |
+| ----------------- | ----------------------------------------------------------------------------------- |
+| `auth`            | Redirects to /login if not authenticated; returns 401 for AJAX                      |
+| `guest`           | Redirects to /dashboard if already authenticated                                    |
+| `admin`           | Returns 403 (or redirects) if role !== 'admin'                                      |
+| `vendor`          | Redirects to /dashboard if role !== 'vendor'                                        |
+| `customer`        | Redirects if role !== 'customer'                                                    |
+| `csrf`            | Validates CSRF token from POST body or X-CSRF-TOKEN header; returns 419 on mismatch |
+| `rateLimit($key)` | Max 5 attempts per 15 minutes per session key                                       |
 
 ### 7. Validator (`app/Core/Validator.php`)
 
@@ -179,19 +183,25 @@ Lightweight input validation with pipe-delimited rule syntax.
 ## Application Controllers
 
 ### HomeController
+
 Fetches featured products, latest products, active categories, active banners, and trending products for the homepage.
 
 ### AuthController
+
 Handles registration with validation, login with rate limiting, logout with session destruction, and password reset flow (forgot → email token → reset).
 
 ### ShopController
+
 Product browsing with category, brand, and price range filters; keyword search via MySQL FULLTEXT index; sorting (newest, price, name, rating); product detail page with image gallery, variant selection, reviews, and related products; vendor store page.
 
 ### CartController
+
 Session-based cart for guests, database cart for logged-in users; cart merging on login; AJAX add/update/remove; coupon validation and application.
 
 ### CheckoutController
+
 Complete Paystack integration:
+
 - Transaction initialization via cURL to Paystack API
 - Order creation with pending status
 - Callback verification
@@ -201,18 +211,23 @@ Complete Paystack integration:
 - Cart clearing on successful payment
 
 ### DashboardController
+
 Customer dashboard: order history with pagination, order details, wishlist management, address CRUD, profile editing, review submission (with purchase verification), notification management.
 
 ### WishlistController
+
 Toggle products in wishlist with AJAX support; duplicate detection.
 
 ### VendorController (largest controller, ~970 lines)
+
 Vendor dashboard: product CRUD with image upload and variant management, order management with per-item status updates, review viewing, coupon CRUD, earnings analytics, withdrawal requests, store profile/branding, notifications.
 
 ### AdminController (largest controller, ~1100 lines)
+
 Platform administration: analytics dashboard with revenue chart, user management, vendor verification, product approval workflow (pending→approved/rejected), category CRUD, brand CRUD, order management, transaction log, withdrawal processing, banner management, platform settings (key-value), notification broadcasting, profile management.
 
 ### ApiController
+
 RESTful API: paginated product listing, product detail, category listing, store listing — all returning JSON.
 
 ---
@@ -220,27 +235,28 @@ RESTful API: paginated product listing, product detail, category listing, store 
 ## Models
 
 Each of the 22 models extends `App\Core\Model` and defines:
+
 - `$table` — database table name
 - `$primaryKey` — default `'id'`
 - `$fillable` — mass-assignable columns
 
 **Key model methods (defined on individual models):**
 
-| Model | Methods |
-|-------|---------|
-| `User` | `findByEmail()`, `isAdmin()`, `isVendor()`, `getStore()`, `getAddresses()` |
-| `Product` | `scopeActive()`, `scopeFeatured()`, `search()`, `getPrice()`, `getDiscountPercent()`, `getAverageRating()`, `getImages()`, `getVariants()` |
-| `Order` | `generateOrderNumber()`, `scopeByUser()`, `scopeByStatus()`, `getItems()`, `getPayment()` |
-| `Store` | `scopeActive()`, `scopeVerified()`, `getRating()`, `getProductCount()` |
-| `Cart` | `getCartForUser()`, `calculateTotals()`, `addItem()`, `removeItem()`, `mergeGuestCart()` |
-| `Category` | `getBreadcrumbs()`, `scopeParents()`, `children()`, `getProductCount()` |
-| `Coupon` | `findByCode()`, `calculateDiscount()`, `isValid()`, `incrementUsed()` |
-| `Review` | `scopeApproved()`, `scopeByProduct()`, `getAverageRating()` |
-| `Notification` | `scopeUnread()`, `markAsRead()`, `createForUser()` |
-| `Setting` | `getValue()`, `setValue()`, `getByGroup()` |
-| `Address` | `scopeByUser()`, `scopeDefault()` |
-| `Wishlist` | `toggle()`, `isInWishlist()`, `getUserWishlist()` |
-| `Payment` | `scopeByReference()` |
+| Model          | Methods                                                                                                                                    |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `User`         | `findByEmail()`, `isAdmin()`, `isVendor()`, `getStore()`, `getAddresses()`                                                                 |
+| `Product`      | `scopeActive()`, `scopeFeatured()`, `search()`, `getPrice()`, `getDiscountPercent()`, `getAverageRating()`, `getImages()`, `getVariants()` |
+| `Order`        | `generateOrderNumber()`, `scopeByUser()`, `scopeByStatus()`, `getItems()`, `getPayment()`                                                  |
+| `Store`        | `scopeActive()`, `scopeVerified()`, `getRating()`, `getProductCount()`                                                                     |
+| `Cart`         | `getCartForUser()`, `calculateTotals()`, `addItem()`, `removeItem()`, `mergeGuestCart()`                                                   |
+| `Category`     | `getBreadcrumbs()`, `scopeParents()`, `children()`, `getProductCount()`                                                                    |
+| `Coupon`       | `findByCode()`, `calculateDiscount()`, `isValid()`, `incrementUsed()`                                                                      |
+| `Review`       | `scopeApproved()`, `scopeByProduct()`, `getAverageRating()`                                                                                |
+| `Notification` | `scopeUnread()`, `markAsRead()`, `createForUser()`                                                                                         |
+| `Setting`      | `getValue()`, `setValue()`, `getByGroup()`                                                                                                 |
+| `Address`      | `scopeByUser()`, `scopeDefault()`                                                                                                          |
+| `Wishlist`     | `toggle()`, `isInWishlist()`, `getUserWishlist()`                                                                                          |
+| `Payment`      | `scopeByReference()`                                                                                                                       |
 
 ---
 
@@ -249,6 +265,7 @@ Each of the 22 models extends `App\Core\Model` and defines:
 Views are plain PHP files (no template engine) organized in a Blade-like directory structure under `app/Views/`.
 
 **Layout system:**
+
 - `layouts/header.php` — HTML head, Tailwind/FontAwesome CDN, navigation bar, search, cart badge, user menu, mobile hamburger, flash messages
 - `layouts/footer.php` — Footer with links, newsletter form, dark mode toggle, social icons
 - `layouts/sidebar.php` — Role-based sidebar (Customer, Vendor, Admin specific navigation)
@@ -306,6 +323,7 @@ Paystack sends POST /checkout/webhook
 ```
 
 **Security measures:**
+
 - Webhook signature verified with `hash_hmac('sha512', ...)` against stored secret
 - Amount comparison prevents tampering (compares Paystack amount vs order total)
 - Only processes webhooks for known references
@@ -373,6 +391,7 @@ This layered approach ensures compatibility across local development, shared hos
 ## File Uploads
 
 Uploaded files are stored in `public/uploads/` organized by type:
+
 - `public/uploads/products/` — Product images
 - `public/uploads/stores/` — Store logos and banners
 - `public/uploads/banners/` — Homepage banners
