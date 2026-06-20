@@ -9,7 +9,7 @@ $success = $success ?? $session->getFlash('success', '');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= htmlspecialchars($_SESSION['_csrf_token'] ?? '') ?>">
-    <title>Forgot Password | Celer Market</title>
+    <title>Forgot Password | The Middle Man</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -31,10 +31,8 @@ $success = $success ?? $session->getFlash('success', '');
 <body class="bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-200 antialiased min-h-screen flex items-center justify-center p-4">
     <div class="absolute top-4 left-4">
         <a href="/" class="flex items-center gap-2">
-            <span class="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-primary-700 to-primary-500 rounded-lg shadow-md">
-                <i class="fas fa-bolt text-white text-sm"></i>
-            </span>
-            <span class="text-lg font-extrabold bg-gradient-to-r from-primary-700 to-accent-600 bg-clip-text text-transparent">Celer Market</span>
+            <img src="/uploads/logos/logo1.png" alt="The Middle Man" class="h-8 w-auto">
+            <span class="text-lg font-extrabold bg-gradient-to-r from-primary-700 to-accent-600 bg-clip-text text-transparent">The Middle Man</span>
         </a>
     </div>
 

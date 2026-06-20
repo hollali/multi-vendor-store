@@ -36,7 +36,7 @@ class Controller
             return $messages;
         };
         $data['currency_symbol'] = 'GH₵';
-        $data['site_name'] = 'Celer Market';
+        $data['site_name'] = 'The Middle Man';
 
         $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
         $data['baseUrl'] = $basePath;

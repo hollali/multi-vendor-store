@@ -16,9 +16,9 @@
                                 <?php if (!empty($banner['subtitle'])): ?>
                                     <p class="text-sm sm:text-lg text-gray-200 mb-5"><?= htmlspecialchars($banner['subtitle']) ?></p>
                                 <?php endif; ?>
-                                <?php if (!empty($banner['cta_link'])): ?>
-                                    <a href="<?= htmlspecialchars($banner['cta_link']) ?>" class="inline-flex items-center gap-2 px-6 py-3 bg-accent-600 hover:bg-accent-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all text-sm sm:text-base">
-                                        <?= htmlspecialchars($banner['cta_text'] ?? 'Shop Now') ?>
+                                <?php if (!empty($banner['link'])): ?>
+                                    <a href="<?= htmlspecialchars($banner['link']) ?>" class="inline-flex items-center gap-2 px-6 py-3 bg-accent-600 hover:bg-accent-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all text-sm sm:text-base">
+                                        Shop Now
                                         <i class="fas fa-arrow-right"></i>
                                     </a>
                                 <?php endif; ?>
@@ -40,7 +40,7 @@
             <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-800 to-primary-600">
                 <div class="text-center text-white px-4">
                     <i class="fas fa-bolt text-6xl mb-4 opacity-50"></i>
-                    <h2 class="text-3xl sm:text-5xl font-extrabold mb-3">Welcome to Celer Market</h2>
+                    <h2 class="text-3xl sm:text-5xl font-extrabold mb-3">Welcome to The Middle Man</h2>
                     <p class="text-lg text-gray-200 mb-5">Ghana's trusted multi-vendor marketplace</p>
                     <a href="/shop" class="inline-flex items-center gap-2 px-6 py-3 bg-accent-600 hover:bg-accent-700 text-white font-semibold rounded-lg transition"><i class="fas fa-store"></i> Start Shopping</a>
                 </div>

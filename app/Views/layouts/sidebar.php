@@ -1,10 +1,8 @@
 <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 lg:w-80 xl:w-96 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen overflow-y-auto flex-shrink-0 transition-transform duration-300 ease-in-out -translate-x-full md:sticky md:top-0 md:translate-x-0 md:flex md:flex-col">
     <div class="p-4 lg:p-6 xl:p-8 border-b border-gray-200 dark:border-gray-800">
         <a href="/" class="flex items-center gap-2 mb-4">
-            <span class="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-primary-700 to-primary-500 rounded-lg shadow-md">
-                <i class="fas fa-bolt text-white text-sm"></i>
-            </span>
-            <span class="text-lg font-extrabold bg-gradient-to-r from-primary-700 to-accent-600 bg-clip-text text-transparent">Celer Market</span>
+            <img src="/uploads/logos/logo1.png" alt="The Middle Man" class="h-8 w-auto">
+            <span class="text-lg font-extrabold bg-gradient-to-r from-primary-700 to-accent-600 bg-clip-text text-transparent">The Middle Man</span>
         </a>
         <div class="flex items-center gap-3">
             <span class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm flex-shrink-0">

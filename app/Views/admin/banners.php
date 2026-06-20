@@ -76,7 +76,7 @@
 
         <div id="addBannerForm" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 lg:p-6">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4"><?= isset($editBanner) ? 'Edit Banner' : 'Add New Banner' ?></h2>
-            <form action="/admin/banners/save" method="POST" enctype="multipart/form-data">
+            <form action="/admin/banners" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($_SESSION['_csrf_token'] ?? '') ?>">
                 <?php if (isset($editBanner)): ?>
                     <input type="hidden" name="id" value="<?= htmlspecialchars($editBanner->id ?? $editBanner['id'] ?? '') ?>">

@@ -238,7 +238,7 @@ document.getElementById('checkout-form')?.addEventListener('submit', function(e)
         ref: ref,
         metadata: {
             custom_fields: [
-                { display_name: "Source", variable_name: "source", value: "Celer Market" }
+                { display_name: "Source", variable_name: "source", value: "The Middle Man" }
             ]
         },
         callback: function(response) {

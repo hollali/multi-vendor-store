@@ -22,7 +22,7 @@ The entire application is built on a lightweight custom MVC framework — no hea
 
 | Technology | Usage |
 |------------|-------|
-| **PHP 8.1+** | Custom MVC framework (no Laravel, no Composer packages) |
+| **PHP 8.1+** | Custom MVC framework (no Laravel, minimal Composer packages) |
 | **MySQL/MariaDB** | Relational database with 22 tables, FULLTEXT search |
 | **Apache** | `mod_rewrite` for clean URLs, security headers, caching |
 | **Tailwind CSS 3 (CDN)** | Utility-first responsive styling with dark mode |
@@ -50,7 +50,7 @@ The entire application is built on a lightweight custom MVC framework — no hea
 
 | Feature | Details |
 |---------|---------|
-| **Account Management** | Register, login, logout, profile editing, avatar upload, password change |
+| **Account Management** | Register, login, logout, Google OAuth sign-in, profile editing, avatar upload, password change |
 | **Product Browsing** | Category/brand/price filtering, keyword search with FULLTEXT, multiple sort options |
 | **Product Detail** | Image gallery, variant selection (color/size), SKU, stock indicator, related products |
 | **Shopping Cart** | Add/remove items, quantity controls, guest cart persisted via session ID, cart merging on login |
@@ -145,6 +145,9 @@ sudo systemctl restart apache2
 | `PAYSTACK_PUBLIC_KEY` | Yes | — | Paystack live public key |
 | `PAYSTACK_SECRET_KEY` | Yes | — | Paystack live secret key |
 | `PAYSTACK_WEBHOOK_SECRET` | Yes | — | Paystack webhook HMAC secret |
+| `GOOGLE_CLIENT_ID` | No | — | Google OAuth 2.0 client ID (for social login) |
+| `GOOGLE_CLIENT_SECRET` | No | — | Google OAuth 2.0 client secret |
+| `GOOGLE_REDIRECT_URI` | No | `{APP_URL}/auth/google/callback` | Google OAuth redirect URI |
 
 *`DATABASE_URL` (or `MYSQL_URL`, `JAWSDB_URL`, `CLEARDB_DATABASE_URL`) can replace individual DB_HOST/DB_PORT/DB_DATABASE/DB_USERNAME/DB_PASSWORD.
 
@@ -183,7 +186,7 @@ celer-market/
 │   │   └── Validator.php         # Input validation: required, email, numeric, min/max, unique, exists
 │   ├── Controllers/              # 10 controllers (50-1100 lines each)
 │   │   ├── HomeController.php    # Homepage: featured/latest products, banners, categories
-│   │   ├── AuthController.php    # Login, register, logout, forgot/reset password
+│   │   ├── AuthController.php    # Login, register, logout, forgot/reset password, Google OAuth
 │   │   ├── ShopController.php    # Product listing, search, filtering, detail, store page
 │   │   ├── CartController.php    # Cart CRUD, guest/user cart merge, coupon application
 │   │   ├── CheckoutController.php # Paystack checkout, callback, webhook with HMAC verification
@@ -301,6 +304,8 @@ The platform uses 22 MySQL tables with foreign key constraints, indexes, and a F
 | POST | `/forgot-password` | AuthController@forgotPassword | Password reset request submission |
 | GET | `/reset-password/{token}` | AuthController@resetPasswordForm | Password reset form |
 | POST | `/reset-password` | AuthController@resetPassword | Password reset submission |
+| GET | `/auth/google` | AuthController@redirectToGoogle | Google OAuth login redirect |
+| GET | `/auth/google/callback` | AuthController@handleGoogleCallback | Google OAuth callback handler |
 
 ### Authenticated Routes
 

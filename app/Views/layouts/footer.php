@@ -6,10 +6,8 @@
 
             <div>
                 <div class="flex items-center gap-2 mb-4">
-                    <span class="flex items-center justify-center w-9 h-9 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg shadow-md">
-                        <i class="fas fa-bolt text-white text-lg"></i>
-                    </span>
-                    <span class="text-xl font-extrabold bg-gradient-to-r from-primary-400 to-accent-500 bg-clip-text text-transparent">Celer Market</span>
+                    <img src="/uploads/logos/logo1.png" alt="The Middle Man" class="h-9 w-auto">
+                    <span class="text-xl font-extrabold bg-gradient-to-r from-primary-400 to-accent-500 bg-clip-text text-transparent">The Middle Man</span>
                 </div>
                 <p class="text-sm text-gray-400 leading-relaxed mb-4">Ghana's trusted multi-vendor marketplace. Shop from verified sellers across the nation with secure payments and reliable delivery.</p>
                 <div class="flex items-center gap-3 mb-4">
@@ -53,7 +51,7 @@
                     <li><a href="/my-account" class="text-sm text-gray-400 hover:text-white transition">My Account</a></li>
                     <li><a href="/orders" class="text-sm text-gray-400 hover:text-white transition">Track Order</a></li>
                     <li><a href="/wishlist" class="text-sm text-gray-400 hover:text-white transition">Wishlist</a></li>
-                    <li><a href="/sell" class="text-sm text-gray-400 hover:text-white transition">Sell on Celer Market</a></li>
+                    <li><a href="/sell" class="text-sm text-gray-400 hover:text-white transition">Sell on The Middle Man</a></li>
                     <li><a href="/become-vendor" class="text-sm text-gray-400 hover:text-white transition">Become a Vendor</a></li>
                 </ul>
 
@@ -68,7 +66,7 @@
         </div>
 
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4 py-6 border-t border-gray-800">
-            <p class="text-sm text-gray-500 text-center sm:text-left">&copy; <?= date('Y') ?> Celer Market. All rights reserved. Ghana's Trusted Marketplace.</p>
+            <p class="text-sm text-gray-500 text-center sm:text-left">&copy; <?= date('Y') ?> The Middle Man. All rights reserved. Ghana's Trusted Marketplace.</p>
             <div class="flex items-center gap-4">
                 <div class="flex items-center gap-3 text-gray-500">
                     <span class="text-lg" title="Visa"><i class="fab fa-cc-visa"></i></span>

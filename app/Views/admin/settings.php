@@ -12,7 +12,7 @@
         <?php $settings = $settings ?? []; ?>
         <?php $s = function($key, $default = '') use ($settings) { return htmlspecialchars($settings[$key] ?? $default); }; ?>
 
-        <form action="/admin/settings/save" method="POST">
+        <form action="/admin/settings" method="POST">
             <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($_SESSION['_csrf_token'] ?? '') ?>">
 
             <div class="space-y-6">
@@ -23,7 +23,7 @@
                     <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Site Name</label>
-                            <input type="text" name="settings[site_name]" value="<?= $s('site_name', 'Celer Market') ?>" class="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:text-gray-200 placeholder-gray-400">
+                            <input type="text" name="settings[site_name]" value="<?= $s('site_name', 'The Middle Man') ?>" class="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:text-gray-200 placeholder-gray-400">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Site Description</label>

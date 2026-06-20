@@ -32,7 +32,8 @@ $envVars = ['DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD',
             'APP_ENV', 'APP_DEBUG', 'APP_URL',
             'PAYSTACK_PUBLIC_KEY', 'PAYSTACK_SECRET_KEY', 'PAYSTACK_WEBHOOK_SECRET',
             'MAIL_HOST', 'MAIL_PORT', 'MAIL_USERNAME', 'MAIL_PASSWORD',
-            'MAIL_FROM_ADDRESS', 'MAIL_FROM_NAME'];
+            'MAIL_FROM_ADDRESS', 'MAIL_FROM_NAME',
+            'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REDIRECT_URI'];
 foreach ($envVars as $key) {
     $value = $_SERVER[$key] ?? $_ENV[$key] ?? null;
     if ($value !== null && $value !== '' && getenv($key) === false) {
@@ -60,6 +61,8 @@ $router->get('/forgot-password', 'AuthController@forgotPasswordForm', 'guest');
 $router->post('/forgot-password', 'AuthController@forgotPassword');
 $router->get('/reset-password/{token}', 'AuthController@resetPasswordForm', 'guest');
 $router->post('/reset-password', 'AuthController@resetPassword');
+$router->get('/auth/google', 'AuthController@redirectToGoogle');
+$router->get('/auth/google/callback', 'AuthController@handleGoogleCallback');
 
 // Shop
 $router->get('/shop', 'ShopController@index');
@@ -146,6 +149,7 @@ $router->get('/admin/withdrawals', 'AdminController@withdrawals', 'admin');
 $router->post('/admin/withdrawals/{id}/process', 'AdminController@processWithdrawal', 'admin');
 $router->get('/admin/banners', 'AdminController@banners', 'admin');
 $router->post('/admin/banners', 'AdminController@storeBanner', 'admin');
+$router->post('/admin/banners/{id}/toggle', 'AdminController@toggleBanner', 'admin');
 $router->post('/admin/banners/{id}/delete', 'AdminController@deleteBanner', 'admin');
 $router->get('/admin/settings', 'AdminController@settings', 'admin');
 $router->post('/admin/settings', 'AdminController@updateSettings', 'admin');

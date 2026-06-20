@@ -7,7 +7,7 @@
         <?= $csrf_meta() ?>
     <?php endif; ?>
     <meta name="csrf-token" content="<?= htmlspecialchars($_SESSION['_csrf_token'] ?? '') ?>">
-    <title><?= htmlspecialchars($site_name ?? 'Celer Market') ?> | Multi-Vendor Marketplace</title>
+    <title><?= htmlspecialchars($site_name ?? 'The Middle Man') ?> | Multi-Vendor Marketplace</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -63,10 +63,8 @@ foreach (['success', 'error', 'warning', 'info'] as $type) {
                         <i class="fas fa-bars text-xl"></i>
                     </button>
                     <a href="<?= $site_url ?? '/' ?>" class="flex items-center gap-2 group">
-                        <span class="flex items-center justify-center w-9 h-9 bg-gradient-to-br from-primary-700 to-primary-500 rounded-lg shadow-md group-hover:shadow-lg transition-shadow">
-                            <i class="fas fa-bolt text-white text-lg"></i>
-                        </span>
-                        <span class="hidden sm:block text-xl font-extrabold bg-gradient-to-r from-primary-700 to-accent-600 bg-clip-text text-transparent">Celer Market</span>
+                        <img src="/uploads/logos/logo1.png" alt="The Middle Man" class="h-9 w-auto">
+                        <span class="hidden sm:block text-xl font-extrabold bg-gradient-to-r from-primary-700 to-accent-600 bg-clip-text text-transparent">The Middle Man</span>
                     </a>
                 </div>
 

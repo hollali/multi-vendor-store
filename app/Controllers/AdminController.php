@@ -882,6 +882,20 @@ class AdminController extends Controller
         $this->redirectWith('/admin/banners', 'Banner created successfully.', 'success');
     }
 
+    public function toggleBanner($id): void
+    {
+        $banner = Banner::find($id);
+
+        if (!$banner) {
+            $this->renderJSON(['success' => false, 'message' => 'Banner not found.'], 404);
+            return;
+        }
+
+        $newActive = $banner->is_active ? 0 : 1;
+        Banner::update($id, ['is_active' => $newActive]);
+        $this->renderJSON(['success' => true, 'is_active' => $newActive]);
+    }
+
     public function deleteBanner($id): void
     {
         $banner = Banner::find($id);
@@ -918,8 +932,10 @@ class AdminController extends Controller
     {
         $db = Database::getInstance();
 
-        foreach ($_POST as $key => $value) {
-            if ($key === '_csrf_token') {
+        $settings = $_POST['settings'] ?? [];
+
+        foreach ($settings as $key => $value) {
+            if (!is_string($value)) {
                 continue;
             }
 

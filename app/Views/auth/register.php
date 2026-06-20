@@ -12,7 +12,7 @@ $selectedRole = $old['role'] ?? 'customer';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= htmlspecialchars($_SESSION['_csrf_token'] ?? '') ?>">
-    <title>Create Account | Celer Market</title>
+    <title>Create Account | The Middle Man</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -34,10 +34,8 @@ $selectedRole = $old['role'] ?? 'customer';
 <body class="bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-200 antialiased min-h-screen flex items-center justify-center p-4">
     <div class="absolute top-4 left-4">
         <a href="/" class="flex items-center gap-2">
-            <span class="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-primary-700 to-primary-500 rounded-lg shadow-md">
-                <i class="fas fa-bolt text-white text-sm"></i>
-            </span>
-            <span class="text-lg font-extrabold bg-gradient-to-r from-primary-700 to-accent-600 bg-clip-text text-transparent">Celer Market</span>
+            <img src="/uploads/logos/logo1.png" alt="The Middle Man" class="h-8 w-auto">
+            <span class="text-lg font-extrabold bg-gradient-to-r from-primary-700 to-accent-600 bg-clip-text text-transparent">The Middle Man</span>
         </a>
     </div>
 
@@ -55,7 +53,7 @@ $selectedRole = $old['role'] ?? 'customer';
                     <i class="fas fa-user-plus text-2xl text-primary-700 dark:text-primary-400"></i>
                 </div>
                 <h1 class="text-2xl font-extrabold text-gray-900 dark:text-white">Create Account</h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Join Celer Market today</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Join The Middle Man today</p>
             </div>
 
             <?php if ($error): ?>

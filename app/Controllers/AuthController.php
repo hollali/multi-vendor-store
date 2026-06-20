@@ -267,4 +267,181 @@ class AuthController extends Controller
 
         $this->redirectWith('/login', 'Your password has been reset successfully. Please login with your new password.', 'success');
     }
+
+    public function redirectToGoogle(): void
+    {
+        Middleware::guest();
+
+        $clientId = getenv('GOOGLE_CLIENT_ID');
+        $redirectUri = getenv('GOOGLE_REDIRECT_URI') ?: (getenv('APP_URL') ?: 'http://localhost/multi-vendor-store') . '/auth/google/callback';
+
+        if (!$clientId) {
+            $this->redirectWith('/login', 'Google login is not configured.', 'error');
+            return;
+        }
+
+        $params = [
+            'client_id' => $clientId,
+            'redirect_uri' => $redirectUri,
+            'response_type' => 'code',
+            'scope' => 'openid email profile',
+            'access_type' => 'online',
+            'state' => bin2hex(random_bytes(16)),
+        ];
+
+        $this->session->set('google_oauth_state', $params['state']);
+        $this->redirect('https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query($params));
+    }
+
+    public function handleGoogleCallback(): void
+    {
+        Middleware::guest();
+
+        $code = $this->getParam('code');
+        $state = $this->getParam('state');
+        $storedState = $this->session->get('google_oauth_state');
+        $error = $this->getParam('error');
+
+        $this->session->remove('google_oauth_state');
+
+        if ($error) {
+            $this->redirectWith('/login', 'Google login was cancelled.', 'error');
+            return;
+        }
+
+        if (!$code || !$state || $state !== $storedState) {
+            $this->redirectWith('/login', 'Invalid request. Please try again.', 'error');
+            return;
+        }
+
+        $clientId = getenv('GOOGLE_CLIENT_ID');
+        $clientSecret = getenv('GOOGLE_CLIENT_SECRET');
+        $redirectUri = getenv('GOOGLE_REDIRECT_URI') ?: (getenv('APP_URL') ?: 'http://localhost/multi-vendor-store') . '/auth/google/callback';
+
+        if (!$clientId || !$clientSecret) {
+            $this->redirectWith('/login', 'Google login is not configured.', 'error');
+            return;
+        }
+
+        $tokenData = $this->exchangeCodeForToken($code, $clientId, $clientSecret, $redirectUri);
+        if (!$tokenData || !isset($tokenData['id_token'])) {
+            $this->redirectWith('/login', 'Failed to authenticate with Google.', 'error');
+            return;
+        }
+
+        $payload = $this->decodeIdToken($tokenData['id_token']);
+        if (!$payload) {
+            $this->redirectWith('/login', 'Failed to verify Google identity.', 'error');
+            return;
+        }
+
+        $googleId = $payload['sub'];
+        $email = $payload['email'] ?? '';
+        $firstName = $payload['given_name'] ?? explode('@', $email)[0];
+        $lastName = $payload['family_name'] ?? '';
+        $avatar = $payload['picture'] ?? '';
+
+        if (!$email) {
+            $this->redirectWith('/login', 'Google account has no email address.', 'error');
+            return;
+        }
+
+        $user = User::findBySocialId('google', $googleId);
+
+        if (!$user) {
+            $existing = User::findByEmail($email);
+            if ($existing) {
+                $db = Database::getInstance();
+                $db->update('users', [
+                    'provider' => 'google',
+                    'social_id' => $googleId,
+                    'avatar' => $avatar ?: $existing->avatar,
+                ], 'id = :id', ['id' => $existing->id]);
+                $user = User::find($existing->id);
+            } else {
+                $userId = User::create([
+                    'uuid' => sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+                        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+                        mt_rand(0, 0x0fff) | 0x4000,
+                        mt_rand(0, 0x3fff) | 0x8000,
+                        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)),
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                    'email' => $email,
+                    'provider' => 'google',
+                    'social_id' => $googleId,
+                    'avatar' => $avatar,
+                    'role' => 'customer',
+                    'status' => 'active',
+                ]);
+                if (!$userId) {
+                    $this->redirectWith('/login', 'Account creation failed.', 'error');
+                    return;
+                }
+                $user = User::find($userId);
+            }
+        }
+
+        $this->session->setUser($user);
+        $this->session->regenerate();
+        $this->session->setFlash('success', 'Logged in with Google successfully.');
+
+        $intended = $this->session->get('intended_url', '');
+        if ($intended) {
+            $this->session->remove('intended_url');
+            $this->redirect($intended);
+        }
+
+        $this->redirect('/dashboard');
+    }
+
+    private function exchangeCodeForToken(string $code, string $clientId, string $clientSecret, string $redirectUri): ?array
+    {
+        $url = 'https://oauth2.googleapis.com/token';
+        $postData = [
+            'code' => $code,
+            'client_id' => $clientId,
+            'client_secret' => $clientSecret,
+            'redirect_uri' => $redirectUri,
+            'grant_type' => 'authorization_code',
+        ];
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => http_build_query($postData),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_TIMEOUT => 10,
+        ]);
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode !== 200 || !$response) {
+            return null;
+        }
+
+        return json_decode($response, true);
+    }
+
+    private function decodeIdToken(string $idToken): ?array
+    {
+        $parts = explode('.', $idToken);
+        if (count($parts) !== 3) {
+            return null;
+        }
+
+        $payload = json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true);
+        if (!$payload || !isset($payload['sub'])) {
+            return null;
+        }
+
+        if (isset($payload['exp']) && $payload['exp'] < time()) {
+            return null;
+        }
+
+        return $payload;
+    }
 }

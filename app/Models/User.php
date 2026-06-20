@@ -9,12 +9,22 @@ class User extends Model
     protected static string $primaryKey = 'id';
     protected static array $fillable = [
         'uuid', 'first_name', 'last_name', 'email', 'password', 'role', 'phone', 'avatar',
-        'email_verified_at', 'remember_token', 'status', 'login_attempts', 'locked_until'
+        'email_verified_at', 'remember_token', 'status', 'login_attempts', 'locked_until',
+        'provider', 'social_id'
     ];
 
     public static function findByEmail(string $email): ?\stdClass
     {
         return static::findBy('email', $email);
+    }
+
+    public static function findBySocialId(string $provider, string $socialId): ?\stdClass
+    {
+        $db = \App\Core\Database::getInstance();
+        return $db->fetch(
+            "SELECT * FROM " . static::$table . " WHERE provider = :provider AND social_id = :social_id LIMIT 1",
+            ['provider' => $provider, 'social_id' => $socialId]
+        );
     }
 
     public function getFullName(\stdClass $user): string
