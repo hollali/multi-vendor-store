@@ -59,7 +59,7 @@
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
                                     <td class="px-5 py-4">
                                         <div class="flex items-center gap-3">
-                                            <span class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-xs font-bold flex-shrink-0"><?= strtoupper(substr($user->name ?? $user['name'] ?? 'U', 0, 1)) ?></span>
+                                            <span class="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0"><?= strtoupper(substr($user->name ?? $user['name'] ?? 'U', 0, 1)) ?></span>
                                             <span class="font-medium text-gray-900 dark:text-white"><?= htmlspecialchars($user->name ?? $user['name'] ?? '') ?></span>
                                         </div>
                                     </td>

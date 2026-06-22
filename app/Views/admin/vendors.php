@@ -67,7 +67,7 @@
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
                                     <td class="px-5 py-4">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white text-sm flex-shrink-0">
+                                            <div class="w-9 h-9 rounded-lg bg-purple-600 flex items-center justify-center text-white text-sm flex-shrink-0">
                                                 <i class="fas fa-store"></i>
                                             </div>
                                             <span class="font-medium text-gray-900 dark:text-white"><?= htmlspecialchars($vendor->store_name ?? $vendor['store_name'] ?? $vendor->name ?? $vendor['name'] ?? '') ?></span>

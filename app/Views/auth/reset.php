@@ -11,7 +11,7 @@ $email = $email ?? $_GET['email'] ?? '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= htmlspecialchars($_SESSION['_csrf_token'] ?? '') ?>">
-    <title>Reset Password | The Middle Man</title>
+    <title>Reset Password | Celer Market</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -33,8 +33,8 @@ $email = $email ?? $_GET['email'] ?? '';
 <body class="bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-200 antialiased min-h-screen flex items-center justify-center p-4">
     <div class="absolute top-4 left-4">
         <a href="/" class="flex items-center gap-2">
-            <img src="/uploads/logos/logo1.png" alt="The Middle Man" class="h-8 w-auto">
-            <span class="text-lg font-extrabold bg-gradient-to-r from-primary-700 to-accent-600 bg-clip-text text-transparent">The Middle Man</span>
+            <img src="/uploads/logos/logo1.png" alt="Celer Market" class="h-8 w-auto">
+            <span class="text-lg font-extrabold text-primary-700 dark:text-primary-400">Celer Market</span>
         </a>
     </div>
 
@@ -48,7 +48,7 @@ $email = $email ?? $_GET['email'] ?? '';
     <div class="w-full max-w-md">
         <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-8">
             <div class="text-center mb-7">
-                <div class="w-14 h-14 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/30 dark:to-primary-800/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <div class="w-14 h-14 bg-primary-50 dark:bg-primary-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
                     <i class="fas fa-unlock-alt text-2xl text-primary-700 dark:text-primary-400"></i>
                 </div>
                 <h1 class="text-2xl font-extrabold text-gray-900 dark:text-white">Reset Password</h1>
@@ -102,7 +102,7 @@ $email = $email ?? $_GET['email'] ?? '';
                     </div>
                 </div>
 
-                <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-primary-700 to-primary-600 hover:from-primary-800 hover:to-primary-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all text-sm">
+                <button type="submit" class="w-full py-2.5 bg-primary-700 hover:bg-primary-800 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all text-sm">
                     <i class="fas fa-check mr-2"></i>Reset Password
                 </button>
             </form>

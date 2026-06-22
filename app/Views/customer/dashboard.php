@@ -16,23 +16,21 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
             <?php
-            $stats = $stats ?? [];
-            $cards = [
-                ['label' => 'Total Orders', 'value' => $stats['total_orders'] ?? 0, 'icon' => 'fa-shopping-bag', 'from' => 'from-blue-600', 'to' => 'to-blue-400'],
-                ['label' => 'Total Spent', 'value' => 'GHS ' . number_format($stats['total_spent'] ?? 0, 2), 'icon' => 'fa-credit-card', 'from' => 'from-green-600', 'to' => 'to-green-400'],
-                ['label' => 'Pending Orders', 'value' => $stats['pending_orders'] ?? 0, 'icon' => 'fa-clock', 'from' => 'from-yellow-500', 'to' => 'to-yellow-400'],
-                ['label' => 'Wishlist Items', 'value' => $stats['wishlist_count'] ?? 0, 'icon' => 'fa-heart', 'from' => 'from-pink-500', 'to' => 'to-pink-400'],
+            $statsCards = [
+                ['label' => 'Total Orders', 'value' => $totalOrders ?? 0, 'icon' => 'fa-shopping-bag', 'bg' => 'bg-blue-600'],
+                ['label' => 'Pending Orders', 'value' => $pendingOrders ?? 0, 'icon' => 'fa-clock', 'bg' => 'bg-yellow-600'],
+                ['label' => 'Total Spent', 'value' => ($geo_currency_symbol ?? 'GH₵') . ' ' . number_format($totalSpent ?? 0, 2), 'icon' => 'fa-credit-card', 'bg' => 'bg-green-600'],
+                ['label' => 'Wishlist Items', 'value' => $wishlistCount ?? 0, 'icon' => 'fa-heart', 'bg' => 'bg-pink-600'],
             ];
             ?>
-            <?php foreach ($cards as $card): ?>
+            <?php foreach ($statsCards as $card): ?>
                 <div class="relative overflow-hidden rounded-xl shadow-sm bg-white dark:bg-gray-800 p-5 group hover:shadow-md transition">
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br <?= $card['from'] ?> <?= $card['to'] ?> opacity-10 rounded-bl-full"></div>
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-500 dark:text-gray-400"><?= $card['label'] ?></p>
                             <p class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mt-1"><?= $card['value'] ?></p>
                         </div>
-                        <div class="w-12 h-12 rounded-lg bg-gradient-to-br <?= $card['from'] ?> <?= $card['to'] ?> flex items-center justify-center shadow-sm">
+                        <div class="w-12 h-12 rounded-lg <?= $card['bg'] ?> flex items-center justify-center shadow-sm">
                             <i class="fas <?= $card['icon'] ?> text-white text-lg"></i>
                         </div>
                     </div>
@@ -71,15 +69,21 @@
                                 <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                                     <?php foreach (array_slice($recentOrders, 0, 5) as $order): ?>
                                         <?php
-                                        $status = $order->status ?? $order['status'] ?? 'pending';
-                                        $statusStyles = ['pending' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300', 'processing' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', 'shipped' => 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300', 'delivered' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', 'cancelled' => 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'];
-                                        $label = ucfirst($status);
+                                        $orderStatus = $order->order_status ?? $order['order_status'] ?? $order->status ?? $order['status'] ?? 'pending';
+                                        $statusStyles = [
+                                            'pending' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+                                            'processing' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+                                            'shipped' => 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+                                            'delivered' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+                                            'cancelled' => 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+                                        ];
+                                        $label = ucfirst($orderStatus);
                                         ?>
                                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                                            <td class="px-5 py-4 font-medium text-gray-900 dark:text-white">#<?= htmlspecialchars($order->id ?? $order['id'] ?? '') ?></td>
+                                            <td class="px-5 py-4 font-medium text-gray-900 dark:text-white">#<?= htmlspecialchars($order->order_number ?? $order['order_number'] ?? $order->id ?? $order['id'] ?? '') ?></td>
                                             <td class="px-5 py-4 text-gray-500 dark:text-gray-400"><?= htmlspecialchars(date('M d, Y', strtotime($order->created_at ?? $order['created_at'] ?? ''))) ?></td>
-                                            <td class="px-5 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $statusStyles[$status] ?? $statusStyles['pending'] ?>"><?= $label ?></span></td>
-                                            <td class="px-5 py-4 font-medium text-gray-900 dark:text-white">GHS <?= number_format($order->total ?? $order['total'] ?? 0, 2) ?></td>
+                                            <td class="px-5 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $statusStyles[$orderStatus] ?? $statusStyles['pending'] ?>"><?= $label ?></span></td>
+                                            <td class="px-5 py-4 font-medium text-gray-900 dark:text-white"><?= ($geo_currency_symbol ?? 'GH₵') ?> <?= number_format($order->total ?? $order['total'] ?? 0, 2) ?></td>
                                             <td class="px-5 py-4"><a href="/orders/<?= htmlspecialchars($order->id ?? $order['id'] ?? '') ?>" class="inline-flex items-center gap-1 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 text-xs font-medium rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/40 transition">View <i class="fas fa-arrow-right text-[10px]"></i></a></td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -101,7 +105,7 @@
                             ['url' => '/wishlist', 'icon' => 'fa-heart', 'label' => 'Wishlist', 'color' => 'text-pink-600 dark:text-pink-400', 'bg' => 'bg-pink-50 dark:bg-pink-900/20'],
                             ['url' => '/profile', 'icon' => 'fa-user-cog', 'label' => 'Profile Settings', 'color' => 'text-purple-600 dark:text-purple-400', 'bg' => 'bg-purple-50 dark:bg-purple-900/20'],
                             ['url' => '/addresses', 'icon' => 'fa-map-marker-alt', 'label' => 'Addresses', 'color' => 'text-orange-600 dark:text-orange-400', 'bg' => 'bg-orange-50 dark:bg-orange-900/20'],
-                            ['url' => '/notifications', 'icon' => 'fa-bell', 'label' => 'Notifications', 'color' => 'text-indigo-600 dark:text-indigo-400', 'bg' => 'bg-indigo-50 dark:bg-indigo-900/20'],
+                            ['url' => '/dashboard/notifications', 'icon' => 'fa-bell', 'label' => 'Notifications', 'color' => 'text-indigo-600 dark:text-indigo-400', 'bg' => 'bg-indigo-50 dark:bg-indigo-900/20'],
                         ];
                         ?>
                         <?php foreach ($links as $link): ?>

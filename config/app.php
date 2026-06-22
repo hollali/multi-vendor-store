@@ -8,5 +8,18 @@ return [
     'locale' => 'en',
     'currency' => 'GHS',
     'currency_symbol' => 'GH₵',
-    'version' => '1.0.0',
+    'version' => '2.0.0',
+    'currencies' => ['GHS', 'NGN', 'USD', 'EUR', 'GBP', 'KES', 'ZAR', 'XOF', 'UGX', 'TZS', 'RWF', 'CAD', 'AUD', 'CNY', 'INR'],
+    'base_currency' => 'GHS',
+    'shipping' => [
+        'default_origin' => 'GH',
+        'free_shipping_threshold' => 200,
+        'tax_rate' => 2.5,
+        'default_weight_kg' => 0.5,
+    ],
+    'geolocation' => [
+        'enabled' => true,
+        'default_country' => 'GH',
+        'ipapi_key' => getenv('IPAPI_KEY') ?: '',
+    ],
 ];

@@ -207,4 +207,36 @@ class ApiController extends Controller
 
         $this->renderJSON($stores);
     }
+
+    public function searchSuggestions()
+    {
+        $query = trim($_GET['q'] ?? '');
+        if (strlen($query) < 2) {
+            $this->renderJSON(['products' => [], 'categories' => []]);
+            return;
+        }
+
+        $db = Database::getInstance();
+        $like = '%' . $query . '%';
+
+        $products = $db->fetchAll(
+            "SELECT p.id, p.name, p.slug, COALESCE(p.sale_price, p.base_price) as price,
+                    (SELECT image FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as image
+             FROM products p
+             WHERE p.is_active = 1 AND p.is_approved = 1 AND p.name LIKE :q
+             LIMIT 5",
+            ['q' => $like]
+        );
+
+        $categories = $db->fetchAll(
+            "SELECT id, name, slug FROM categories WHERE is_active = 1 AND (name LIKE :q OR description LIKE :q2) LIMIT 3",
+            ['q' => $like, 'q2' => $like]
+        );
+
+        $this->renderJSON([
+            'products' => $products,
+            'categories' => $categories,
+            'query' => $query,
+        ]);
+    }
 }

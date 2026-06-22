@@ -6,11 +6,11 @@
     <div class="max-w-4xl mx-auto">
         <div class="mb-6">
             <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">Store Settings</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Update your store information and branding.</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Update your store information, branding, and shipping preferences.</p>
         </div>
 
-        <form action="/vendor/store-settings/update" method="POST" enctype="multipart/form-data" class="space-y-6">
-            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($_SESSION['_csrf_token'] ?? '') ?>">
+        <form action="/vendor/store-settings" method="POST" enctype="multipart/form-data" class="space-y-6">
+            <?= $csrf_field() ?>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 lg:p-6">
@@ -61,20 +61,20 @@
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contact Information</h2>
                     <div class="space-y-4">
                         <div>
-                            <label for="store_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Store Name <span class="text-red-500">*</span></label>
-                            <input type="text" id="store_name" name="store_name" value="<?= htmlspecialchars($store->name ?? $store['name'] ?? '') ?>" required
+                            <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Store Name <span class="text-red-500">*</span></label>
+                            <input type="text" id="name" name="name" value="<?= htmlspecialchars($store->store_name ?? $store['store_name'] ?? $store->name ?? $store['name'] ?? '') ?>" required
                                    class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition"
                                    placeholder="Your store name">
                         </div>
                         <div>
-                            <label for="store_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Store Email <span class="text-red-500">*</span></label>
-                            <input type="email" id="store_email" name="store_email" value="<?= htmlspecialchars($store->email ?? $store['email'] ?? '') ?>" required
+                            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Store Email <span class="text-red-500">*</span></label>
+                            <input type="email" id="email" name="email" value="<?= htmlspecialchars($store->email ?? $store['email'] ?? '') ?>" required
                                    class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition"
                                    placeholder="store@example.com">
                         </div>
                         <div>
-                            <label for="store_phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Store Phone <span class="text-red-500">*</span></label>
-                            <input type="tel" id="store_phone" name="store_phone" value="<?= htmlspecialchars($store->phone ?? $store['phone'] ?? '') ?>" required
+                            <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Store Phone <span class="text-red-500">*</span></label>
+                            <input type="tel" id="phone" name="phone" value="<?= htmlspecialchars($store->phone ?? $store['phone'] ?? '') ?>" required
                                    class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition"
                                    placeholder="+233 XX XXX XXXX">
                         </div>
@@ -114,15 +114,42 @@
                                placeholder="e.g. Greater Accra">
                     </div>
                     <div>
-                        <label for="country" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Country</label>
+                        <label for="country" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Country <span class="text-red-500">*</span></label>
                         <select id="country" name="country"
                                 class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 transition">
-                            <option value="Ghana" <?= (($store->country ?? $store['country'] ?? 'Ghana') === 'Ghana') ? 'selected' : '' ?>>Ghana</option>
-                            <option value="Nigeria" <?= (($store->country ?? '') === 'Nigeria') ? 'selected' : '' ?>>Nigeria</option>
-                            <option value="Kenya" <?= (($store->country ?? '') === 'Kenya') ? 'selected' : '' ?>>Kenya</option>
-                            <option value="South Africa" <?= (($store->country ?? '') === 'South Africa') ? 'selected' : '' ?>>South Africa</option>
-                            <option value="Other" <?= (($store->country ?? '') === 'Other') ? 'selected' : '' ?>>Other</option>
+                            <option value="">Select Country</option>
+                            <?php $selectedCountry = $store->country ?? $store['country'] ?? $geo_country_name ?? 'Ghana'; ?>
+                            <?php foreach ($geo_all_countries as $c): ?>
+                                <?php $countryName = $c->name ?? $c['name'] ?? ''; ?>
+                                <option value="<?= htmlspecialchars($countryName) ?>" <?= $selectedCountry === $countryName ? 'selected' : '' ?>><?= htmlspecialchars($countryName) ?></option>
+                            <?php endforeach; ?>
                         </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 lg:p-6">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Shipping Preferences</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="country_of_origin" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Country of Origin</label>
+                        <select id="country_of_origin" name="country_of_origin"
+                                class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 transition">
+                            <option value="">Select Country</option>
+                            <?php $selectedOrigin = $store->country_of_origin ?? $store['country_of_origin'] ?? $geo_country_name ?? ''; ?>
+                            <?php foreach ($geo_all_countries as $c): ?>
+                                <?php $countryName = $c->name ?? $c['name'] ?? ''; ?>
+                                <option value="<?= htmlspecialchars($countryName) ?>" <?= $selectedOrigin === $countryName ? 'selected' : '' ?>><?= htmlspecialchars($countryName) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Where your products are shipped from.</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">&nbsp;</label>
+                        <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                            <input type="checkbox" name="ships_worldwide" value="1" <?= ($store->ships_worldwide ?? $store['ships_worldwide'] ?? false) ? 'checked' : '' ?> class="w-4 h-4 text-primary-700 focus:ring-primary-500 rounded">
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Ships Worldwide</span>
+                        </label>
                     </div>
                 </div>
             </div>

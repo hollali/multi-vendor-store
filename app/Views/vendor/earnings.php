@@ -20,21 +20,20 @@
             <?php
             $earningsStats = $earningsStats ?? [];
             $cards = [
-                ['label' => 'Total Earned', 'value' => 'GH₵ ' . number_format($earningsStats['total_earned'] ?? 0, 2), 'icon' => 'fa-credit-card', 'from' => 'from-blue-600', 'to' => 'to-blue-400'],
-                ['label' => 'Pending', 'value' => 'GH₵ ' . number_format($earningsStats['pending'] ?? 0, 2), 'icon' => 'fa-clock', 'from' => 'from-yellow-500', 'to' => 'to-yellow-400'],
-                ['label' => 'Available for Withdrawal', 'value' => 'GH₵ ' . number_format($earningsStats['available'] ?? 0, 2), 'icon' => 'fa-check-circle', 'from' => 'from-green-600', 'to' => 'to-green-400'],
-                ['label' => 'Withdrawn', 'value' => 'GH₵ ' . number_format($earningsStats['withdrawn'] ?? 0, 2), 'icon' => 'fa-history', 'from' => 'from-purple-600', 'to' => 'to-purple-400'],
+                ['label' => 'Total Earned', 'value' => 'GH₵ ' . number_format($earningsStats['total_earned'] ?? 0, 2), 'icon' => 'fa-credit-card', 'bg' => 'bg-blue-600'],
+                ['label' => 'Pending', 'value' => 'GH₵ ' . number_format($earningsStats['pending'] ?? 0, 2), 'icon' => 'fa-clock', 'bg' => 'bg-yellow-600'],
+                ['label' => 'Available for Withdrawal', 'value' => 'GH₵ ' . number_format($earningsStats['available'] ?? 0, 2), 'icon' => 'fa-check-circle', 'bg' => 'bg-green-600'],
+                ['label' => 'Withdrawn', 'value' => 'GH₵ ' . number_format($earningsStats['withdrawn'] ?? 0, 2), 'icon' => 'fa-history', 'bg' => 'bg-purple-600'],
             ];
             ?>
             <?php foreach ($cards as $card): ?>
                 <div class="relative overflow-hidden rounded-xl shadow-sm bg-white dark:bg-gray-800 p-5 group hover:shadow-md transition">
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br <?= $card['from'] ?> <?= $card['to'] ?> opacity-10 rounded-bl-full"></div>
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-500 dark:text-gray-400"><?= $card['label'] ?></p>
                             <p class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mt-1"><?= $card['value'] ?></p>
                         </div>
-                        <div class="w-12 h-12 rounded-lg bg-gradient-to-br <?= $card['from'] ?> <?= $card['to'] ?> flex items-center justify-center shadow-sm">
+                        <div class="w-12 h-12 rounded-lg <?= $card['bg'] ?> flex items-center justify-center shadow-sm">
                             <i class="fas <?= $card['icon'] ?> text-white text-lg"></i>
                         </div>
                     </div>

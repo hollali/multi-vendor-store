@@ -16,6 +16,7 @@ use App\Models\Coupon;
 use App\Models\Withdrawal;
 use App\Models\Transaction;
 use App\Models\Notification;
+use App\Services\Shipping as ShippingService;
 
 class VendorController extends Controller
 {
@@ -32,6 +33,13 @@ class VendorController extends Controller
     private function generateSlug(string $name): string
     {
         return strtolower(trim(preg_replace('/[^a-z0-9-]+/', '-', $name), '-'));
+    }
+
+    private function generateSku(string $name): string
+    {
+        $prefix = strtoupper(substr(preg_replace('/[^a-zA-Z0-9]/', '', $name), 0, 4));
+        if (empty($prefix)) $prefix = 'PRD';
+        return $prefix . '-' . strtoupper(bin2hex(random_bytes(4)));
     }
 
     private function handleImageUpload(array $file, string $subdir = 'products'): ?string
@@ -194,10 +202,13 @@ class VendorController extends Controller
             $brands = Brand::all();
         }
 
+        $categories = array_merge($parentCategories, $childCategories);
+
         $this->renderView('vendor/product-form', [
             'store' => $store,
             'parentCategories' => $parentCategories,
             'childCategories' => $childCategories,
+            'categories' => $categories,
             'brands' => $brands,
             'product' => null,
         ]);
@@ -262,7 +273,7 @@ class VendorController extends Controller
             'base_price' => (float)$price,
             'sale_price' => $this->getParam('sale_price') ? (float)$this->getParam('sale_price') : null,
             'quantity' => (int)$quantity,
-            'sku' => Validator::sanitizeString($this->getParam('sku', '')),
+            'sku' => $this->generateSku($name),
             'weight' => $this->getParam('weight') ? (float)$this->getParam('weight') : null,
             'is_featured' => (int)(bool)$this->getParam('is_featured', 0),
             'status' => 'draft',
@@ -345,12 +356,15 @@ class VendorController extends Controller
 
         $images = ProductImage::where('product_id', $product->id)->orderBy('sort_order', 'ASC')->get();
 
+        $categories = array_merge($parentCategories, $childCategories);
+
         $this->renderView('vendor/product-form', [
             'store' => $store,
             'product' => $product,
             'images' => $images,
             'parentCategories' => $parentCategories,
             'childCategories' => $childCategories,
+            'categories' => $categories,
             'brands' => $brands,
         ]);
     }
@@ -402,6 +416,13 @@ class VendorController extends Controller
             $slug = $slug . '-' . uniqid();
         }
 
+        $sku = $this->getParam('sku', '');
+        if (empty($sku)) {
+            $sku = !empty($product->sku) ? $product->sku : $this->generateSku($name);
+        } else {
+            $sku = Validator::sanitizeString($sku);
+        }
+
         Product::update($id, [
             'category_id' => $categoryId,
             'brand_id' => (int)$this->getParam('brand_id', 0) ?: null,
@@ -412,7 +433,7 @@ class VendorController extends Controller
             'base_price' => (float)$price,
             'sale_price' => $this->getParam('sale_price') ? (float)$this->getParam('sale_price') : null,
             'quantity' => (int)$quantity,
-            'sku' => Validator::sanitizeString($this->getParam('sku', '')),
+            'sku' => $sku,
             'weight' => $this->getParam('weight') ? (float)$this->getParam('weight') : null,
             'is_featured' => (int)(bool)$this->getParam('is_featured', 0),
         ]);
@@ -884,11 +905,6 @@ class VendorController extends Controller
         $vendorId = $this->getVendorId();
         $store = $this->getStore();
 
-        if (!$store) {
-            $this->redirectWith('/vendor/dashboard', 'Store not found.', 'error');
-            return;
-        }
-
         $name = Validator::sanitizeString($this->getParam('name', ''));
         $description = $this->getParam('description', '');
         $email = Validator::sanitizeEmail($this->getParam('email', ''));
@@ -908,12 +924,11 @@ class VendorController extends Controller
         ]);
 
         if ($this->validator->fails()) {
-            $this->session->setFlash('error', implode(', ', $this->validator->getErrors()));
-            $this->redirectWith('/vendor/store-settings', 'Please fix the errors below.', 'error');
+            $this->redirectWith('/vendor/store-settings', implode(', ', $this->validator->getErrors()), 'error');
             return;
         }
 
-        $updateData = [
+        $storeData = [
             'store_name' => $name,
             'description' => $description,
             'email' => $email,
@@ -926,29 +941,36 @@ class VendorController extends Controller
         if (!empty($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
             $logoPath = $this->handleImageUpload($_FILES['logo'], 'stores');
             if ($logoPath) {
-                if (!empty($store->logo)) $this->deleteImageFile($store->logo);
-                $updateData['logo'] = $logoPath;
+                if ($store && !empty($store->logo)) $this->deleteImageFile($store->logo);
+                $storeData['logo'] = $logoPath;
             }
         }
 
         if (!empty($_FILES['banner']) && $_FILES['banner']['error'] === UPLOAD_ERR_OK) {
             $bannerPath = $this->handleImageUpload($_FILES['banner'], 'stores');
             if ($bannerPath) {
-                if (!empty($store->banner)) $this->deleteImageFile($store->banner);
-                $updateData['banner'] = $bannerPath;
+                if ($store && !empty($store->banner)) $this->deleteImageFile($store->banner);
+                $storeData['banner'] = $bannerPath;
             }
         }
 
         $db = Database::getInstance();
-        $sets = '';
-        $params = [];
-        foreach ($updateData as $col => $val) {
-            $sets .= "{$col} = :{$col}, ";
-            $params[$col] = $val;
+
+        if ($store) {
+            $sets = '';
+            $params = [];
+            foreach ($storeData as $col => $val) {
+                $sets .= "{$col} = :{$col}, ";
+                $params[$col] = $val;
+            }
+            $sets = rtrim($sets, ', ');
+            $params['id'] = $store->id;
+            $db->query("UPDATE stores SET {$sets} WHERE id = :id", $params);
+        } else {
+            $storeData['vendor_id'] = $vendorId;
+            $storeData['slug'] = $this->generateSlug($name);
+            $db->insert('stores', $storeData);
         }
-        $sets = rtrim($sets, ', ');
-        $params['id'] = $store->id;
-        $db->query("UPDATE stores SET {$sets} WHERE id = :id", $params);
 
         $this->redirectWith('/vendor/store-settings', 'Store settings updated successfully.', 'success');
     }
@@ -968,5 +990,47 @@ class VendorController extends Controller
             'store' => $store,
             'notifications' => $notifications,
         ]);
+    }
+
+    public function shippingRates(): void
+    {
+        $vendorId = $this->getVendorId();
+        $store = $this->getStore();
+
+        $shippingService = ShippingService::getInstance();
+        $zones = $shippingService->getShippingZones();
+        $myRates = $shippingService->getVendorShippingRates($vendorId);
+
+        $this->renderView('vendor/shipping', [
+            'store' => $store,
+            'zones' => $zones,
+            'myRates' => $myRates,
+        ]);
+    }
+
+    public function saveShippingRate(): void
+    {
+        $vendorId = $this->getVendorId();
+        $store = $this->getStore();
+
+        $zoneId = (int)$this->getParam('zone_id', 0);
+        $baseRate = (float)$this->getParam('base_rate', 0);
+        $ratePerKg = (float)$this->getParam('rate_per_kg', 0);
+        $freeShippingMin = $this->getParam('free_shipping_min', '');
+        $estMin = (int)$this->getParam('estimated_days_min', 3);
+        $estMax = (int)$this->getParam('estimated_days_max', 7);
+        $isActive = (int)$this->getParam('is_active', 1);
+
+        $shippingService = ShippingService::getInstance();
+        $shippingService->saveVendorShippingRate($vendorId, $zoneId, [
+            'base_rate' => $baseRate,
+            'rate_per_kg' => $ratePerKg,
+            'free_shipping_min' => $freeShippingMin,
+            'estimated_days_min' => $estMin,
+            'estimated_days_max' => $estMax,
+            'is_active' => $isActive,
+        ]);
+
+        $this->redirectWith('/vendor/shipping', 'Shipping rate saved successfully.', 'success');
     }
 }

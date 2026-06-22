@@ -10,24 +10,26 @@ $storeRating = (float)($store->rating ?? $store['rating'] ?? $store->avg_rating 
 $storeJoined = $store->created_at ?? $store['created_at'] ?? '';
 $storeProductCount = (int)($store->products_count ?? $store['products_count'] ?? $store->product_count ?? $store['product_count'] ?? 0);
 $storeReviewsCount = (int)($store->reviews_count ?? $store['reviews_count'] ?? 0);
+$storeVerified = $store->verified ?? $store['verified'] ?? false;
+$shippingRates = $vendorShippingRates ?? [];
 ?>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
     <!-- Breadcrumb -->
     <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4 sm:mb-6 flex-wrap">
-        <a href="/" class="hover:text-primary-700 dark:hover:text-primary-400 transition"><i class="fas fa-home mr-1"></i>Home</a>
+        <a href="<?= $url('/') ?>" class="hover:text-primary-700 dark:hover:text-primary-400 transition"><i class="fas fa-home mr-1"></i>Home</a>
         <i class="fas fa-chevron-right text-[10px]"></i>
-        <a href="/shop" class="hover:text-primary-700 dark:hover:text-primary-400 transition">Stores</a>
+        <a href="<?= $url('/shop') ?>" class="hover:text-primary-700 dark:hover:text-primary-400 transition">Stores</a>
         <i class="fas fa-chevron-right text-[10px]"></i>
         <span class="text-gray-800 dark:text-gray-200 font-medium"><?= htmlspecialchars($storeName) ?></span>
     </nav>
 
     <!-- Store Banner -->
-    <div class="relative rounded-xl overflow-hidden mb-6 bg-gradient-to-r from-gray-800 to-gray-900">
+    <div class="relative rounded-xl overflow-hidden mb-6 bg-gray-800">
         <?php if ($storeBanner): ?>
             <img src="<?= htmlspecialchars($storeBanner) ?>" alt="<?= htmlspecialchars($storeName) ?>" class="w-full h-40 sm:h-56 object-cover opacity-50">
         <?php endif; ?>
-        <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent"></div>
+        <div class="absolute inset-0 bg-black/50"></div>
         <div class="absolute inset-0 flex items-center px-6 sm:px-10">
             <div class="flex items-center gap-4 sm:gap-6">
                 <?php if ($storeLogo): ?>
@@ -35,12 +37,17 @@ $storeReviewsCount = (int)($store->reviews_count ?? $store['reviews_count'] ?? 0
                         <img src="<?= htmlspecialchars($storeLogo) ?>" alt="" class="w-full h-full object-cover">
                     </div>
                 <?php else: ?>
-                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-lg flex-shrink-0">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-primary-600 flex items-center justify-center shadow-lg flex-shrink-0">
                         <i class="fas fa-store text-3xl text-white"></i>
                     </div>
                 <?php endif; ?>
                 <div class="text-white">
-                    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold"><?= htmlspecialchars($storeName) ?></h1>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold"><?= htmlspecialchars($storeName) ?></h1>
+                        <?php if ($storeVerified): ?>
+                            <span class="px-2.5 py-0.5 bg-blue-500/20 text-blue-300 text-xs font-bold rounded-full flex items-center gap-1 border border-blue-400/30"><i class="fas fa-check-circle"></i> Verified</span>
+                        <?php endif; ?>
+                    </div>
                     <?php if ($storeDesc): ?>
                         <p class="text-sm text-gray-200 max-w-xl mt-1 line-clamp-2"><?= htmlspecialchars($storeDesc) ?></p>
                     <?php endif; ?>
@@ -60,7 +67,7 @@ $storeReviewsCount = (int)($store->reviews_count ?? $store['reviews_count'] ?? 0
                 <span><?= number_format($storeRating, 1) ?></span>
                 <i class="fas fa-star text-yellow-400 text-base"></i>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Rating (<?= $storeReviewsCount ?>)</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Rating</p>
         </div>
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 text-center">
             <p class="text-2xl font-bold text-gray-900 dark:text-white"><?= $storeReviewsCount ?></p>
@@ -76,6 +83,39 @@ $storeReviewsCount = (int)($store->reviews_count ?? $store['reviews_count'] ?? 0
         </div>
     </div>
 
+    <!-- Shipping Zones -->
+    <?php if (!empty($shippingRates)): ?>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 sm:p-6 mb-6">
+            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2"><i class="fas fa-truck text-primary-600"></i> Shipping Zones</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-100 dark:border-gray-700">
+                            <th class="text-left py-2 pr-4 font-semibold text-gray-700 dark:text-gray-300">Country</th>
+                            <th class="text-left py-2 pr-4 font-semibold text-gray-700 dark:text-gray-300">Rate</th>
+                            <th class="text-left py-2 font-semibold text-gray-700 dark:text-gray-300">Estimated Delivery</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($shippingRates as $rate): ?>
+                            <?php
+                            $srCountry = $rate->country ?? $rate['country'] ?? '';
+                            $srRate = (float)($rate->rate ?? $rate['rate'] ?? 0);
+                            $srMin = $rate->estimated_days_min ?? $rate['estimated_days_min'] ?? '';
+                            $srMax = $rate->estimated_days_max ?? $rate['estimated_days_max'] ?? '';
+                            ?>
+                            <tr class="border-b border-gray-50 dark:border-gray-800 last:border-0">
+                                <td class="py-2.5 pr-4 text-gray-600 dark:text-gray-400"><?= htmlspecialchars($srCountry) ?></td>
+                                <td class="py-2.5 pr-4 font-medium text-gray-800 dark:text-gray-200"><?= $geo_currency_symbol ?? 'GH₵' ?><?= number_format($srRate, 2) ?></td>
+                                <td class="py-2.5 text-gray-600 dark:text-gray-400"><?= $srMin && $srMax ? (int)$srMin . '–' . (int)$srMax . ' days' : ($srMin ? (int)$srMin . ' days' : '—') ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <!-- Products -->
     <?php if (!empty($products) && count($products) > 0): ?>
         <div class="flex items-center justify-between mb-4">
@@ -83,7 +123,7 @@ $storeReviewsCount = (int)($store->reviews_count ?? $store['reviews_count'] ?? 0
             <select onchange="window.location.href=this.value" class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-gray-200 cursor-pointer">
                 <?php
                 $currentSort = $_GET['sort'] ?? 'newest';
-                $baseUrl = '/shop/store/' . htmlspecialchars($storeSlug) . '?' . http_build_query(array_merge($_GET, ['sort' => '__VAL__']));
+                $baseUrl = $url('/shop/store/' . $storeSlug . '?' . http_build_query(array_merge($_GET, ['sort' => '__VAL__'])));
                 $sortOptions = ['newest' => 'Newest', 'price_asc' => 'Price: Low to High', 'price_desc' => 'Price: High to Low', 'name_asc' => 'Name: A-Z', 'rating' => 'Top Rated'];
                 ?>
                 <?php foreach ($sortOptions as $val => $label): ?>
@@ -91,7 +131,7 @@ $storeReviewsCount = (int)($store->reviews_count ?? $store['reviews_count'] ?? 0
                 <?php endforeach; ?>
             </select>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             <?php foreach ($products as $product): ?>
                 <?php include __DIR__ . '/_product_card.php'; ?>
             <?php endforeach; ?>
@@ -101,7 +141,7 @@ $storeReviewsCount = (int)($store->reviews_count ?? $store['reviews_count'] ?? 0
                 <?php
                 $currentPage = $pagination['currentPage'] ?? 1;
                 $lastPage = $pagination['lastPage'] ?? 1;
-                $urlTemplate = $pagination['urlTemplate'] ?? '/shop/store/' . htmlspecialchars($storeSlug) . '?page=__PAGE__';
+                $urlTemplate = $pagination['urlTemplate'] ?? '/shop/store/' . $storeSlug . '?page=__PAGE__';
                 ?>
                 <?php if ($currentPage > 1): ?>
                     <a href="<?= str_replace('__PAGE__', $currentPage - 1, $urlTemplate) ?>" class="px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 transition"><i class="fas fa-chevron-left"></i></a>
@@ -132,7 +172,7 @@ $storeReviewsCount = (int)($store->reviews_count ?? $store['reviews_count'] ?? 0
             </div>
             <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">No products yet</h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">This store hasn't listed any products yet.</p>
-            <a href="/shop" class="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-700 hover:bg-primary-800 text-white text-sm font-medium rounded-lg transition shadow-sm"><i class="fas fa-store"></i> Browse Other Stores</a>
+            <a href="<?= $url('/shop') ?>" class="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-700 hover:bg-primary-800 text-white text-sm font-medium rounded-lg transition shadow-sm"><i class="fas fa-store"></i> Browse Other Stores</a>
         </div>
     <?php endif; ?>
 </div>

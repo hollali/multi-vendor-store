@@ -8,6 +8,7 @@ use App\Core\Validator;
 use App\Core\Middleware;
 use App\Models\User;
 use App\Models\Category;
+use App\Models\Store;
 
 class AuthController extends Controller
 {
@@ -77,6 +78,7 @@ class AuthController extends Controller
     public function registerForm(): void
     {
         Middleware::guest();
+        Middleware::generateCsrfToken();
         $categories = Category::where('is_active', 1)->orderBy('name', 'ASC')->get();
         $this->renderView('auth/register', ['categories' => $categories]);
     }
@@ -86,16 +88,11 @@ class AuthController extends Controller
         Middleware::guest();
         Middleware::csrf();
 
-        $fullName = Validator::sanitizeString($this->getParam('name', ''));
-        $nameParts = explode(' ', $fullName, 2);
-        $firstName = $nameParts[0];
-        $lastName = $nameParts[1] ?? '';
-
         $data = [
-            'first_name' => $firstName,
-            'last_name' => $lastName,
+            'first_name' => Validator::sanitizeString($this->getParam('first_name', '')),
+            'last_name' => Validator::sanitizeString($this->getParam('last_name', '')),
             'email' => Validator::sanitizeEmail($this->getParam('email', '')),
-            'phone' => Validator::sanitizeString($this->getParam('phone', '')),
+            'phone' => preg_replace('/[^0-9]/', '', $this->getParam('phone', '')),
             'password' => $this->getParam('password', ''),
             'password_confirmation' => $this->getParam('password_confirmation', ''),
             'role' => in_array($this->getParam('role', 'customer'), ['customer', 'vendor']) ? $this->getParam('role') : 'customer',
@@ -111,8 +108,7 @@ class AuthController extends Controller
         ]);
 
         if ($this->validator->fails()) {
-            $this->session->setFlash('error', implode(', ', $this->validator->getErrors()));
-            $this->redirectWith('/register', 'Please fix the errors below.', 'error');
+            $this->redirectWith('/register', implode(', ', $this->validator->getErrors()), 'error');
             return;
         }
 
@@ -424,6 +420,41 @@ class AuthController extends Controller
         }
 
         return json_decode($response, true);
+    }
+
+    public function becomeVendorForm(): void
+    {
+        $this->renderView('auth/become-vendor');
+    }
+
+    public function becomeVendor(): void
+    {
+        $userId = $this->session->getUserId();
+        $user = User::find($userId);
+
+        if (!$user || $user->role !== 'customer') {
+            $this->redirectWith('/dashboard', 'Only customers can upgrade to vendor.', 'error');
+            return;
+        }
+
+        $name = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+        $slug = strtolower(trim(preg_replace('/[^a-z0-9-]+/', '-', $name), '-'));
+        if (empty($slug)) $slug = 'store-' . $userId;
+        $slug .= '-' . uniqid();
+
+        $db = Database::getInstance();
+        $db->update('users', ['role' => 'vendor'], 'id = :id', ['id' => $userId]);
+
+        Store::create([
+            'vendor_id' => $userId,
+            'store_name' => $name . "'s Store",
+            'slug' => $slug,
+            'email' => $user->email ?? '',
+            'is_active' => 1,
+        ]);
+
+        $this->session->set('user_role', 'vendor');
+        $this->redirectWith('/vendor/store-settings', 'Welcome to the vendor community! Set up your store to start selling.', 'success');
     }
 
     private function decodeIdToken(string $idToken): ?array

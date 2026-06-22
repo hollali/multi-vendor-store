@@ -398,9 +398,16 @@ class AdminController extends Controller
             $childMap[$child->parent_id][] = $child;
         }
 
+        $editCategory = null;
+        $editId = $this->getParam('edit', 0);
+        if ($editId) {
+            $editCategory = Category::find((int)$editId);
+        }
+
         $this->renderView('admin/categories', [
             'parents' => $parents,
             'children' => $childMap,
+            'editCategory' => $editCategory,
         ]);
     }
 
@@ -424,25 +431,48 @@ class AdminController extends Controller
         }
 
         $db = Database::getInstance();
-        $existing = $db->fetch(
-            "SELECT id FROM categories WHERE slug = :slug LIMIT 1",
-            ['slug' => $slug]
-        );
 
-        if ($existing) {
-            $slug = $slug . '-' . uniqid();
+        $categoryId = $this->getParam('id', 0);
+
+        if ($categoryId) {
+            $existing = $db->fetch(
+                "SELECT id FROM categories WHERE slug = :slug AND id != :id LIMIT 1",
+                ['slug' => $slug, 'id' => $categoryId]
+            );
+            if ($existing) {
+                $slug = $slug . '-' . uniqid();
+            }
+
+            Category::update((int)$categoryId, [
+                'name' => $name,
+                'slug' => $slug,
+                'parent_id' => $parentId,
+                'description' => $description,
+                'sort_order' => (int)$this->getParam('sort_order', 0),
+            ]);
+
+            $this->redirectWith('/admin/categories', 'Category updated successfully.', 'success');
+        } else {
+            $existing = $db->fetch(
+                "SELECT id FROM categories WHERE slug = :slug LIMIT 1",
+                ['slug' => $slug]
+            );
+
+            if ($existing) {
+                $slug = $slug . '-' . uniqid();
+            }
+
+            Category::create([
+                'name' => $name,
+                'slug' => $slug,
+                'parent_id' => $parentId,
+                'description' => $description,
+                'sort_order' => (int)$this->getParam('sort_order', 0),
+                'is_active' => 1,
+            ]);
+
+            $this->redirectWith('/admin/categories', 'Category created successfully.', 'success');
         }
-
-        Category::create([
-            'name' => $name,
-            'slug' => $slug,
-            'parent_id' => $parentId,
-            'description' => $description,
-            'sort_order' => (int)$this->getParam('sort_order', 0),
-            'is_active' => 1,
-        ]);
-
-        $this->redirectWith('/admin/categories', 'Category created successfully.', 'success');
     }
 
     public function deleteCategory($id): void
@@ -854,32 +884,76 @@ class AdminController extends Controller
 
     public function storeBanner(): void
     {
+        $id = (int)$this->getParam('id', 0);
         $title = Validator::sanitizeString($this->getParam('title', ''));
         $subtitle = Validator::sanitizeString($this->getParam('subtitle', ''));
         $link = Validator::sanitizeString($this->getParam('link', ''));
         $sortOrder = (int)$this->getParam('sort_order', 0);
 
-        if (empty($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
-            $this->redirectWith('/admin/banners', 'Banner image is required.', 'error');
+        if ($id) {
+            $banner = Banner::find($id);
+            if (!$banner) {
+                $this->redirectWith('/admin/banners', 'Banner not found.', 'error');
+                return;
+            }
+
+            $data = [
+                'title' => $title,
+                'subtitle' => $subtitle,
+                'link' => $link,
+                'sort_order' => $sortOrder,
+            ];
+
+            if (!empty($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                $imagePath = $this->handleImageUpload($_FILES['image'], 'banners');
+                if (!$imagePath) {
+                    $this->redirectWith('/admin/banners', 'Failed to upload image. Allowed types: jpeg, png, gif, webp.', 'error');
+                    return;
+                }
+                $this->deleteImageFile($banner->image);
+                $data['image'] = $imagePath;
+            }
+
+            Banner::update($id, $data);
+            $this->redirectWith('/admin/banners', 'Banner updated successfully.', 'success');
+        } else {
+            if (empty($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+                $this->redirectWith('/admin/banners', 'Banner image is required.', 'error');
+                return;
+            }
+
+            $imagePath = $this->handleImageUpload($_FILES['image'], 'banners');
+            if (!$imagePath) {
+                $this->redirectWith('/admin/banners', 'Failed to upload image. Allowed types: jpeg, png, gif, webp.', 'error');
+                return;
+            }
+
+            Banner::create([
+                'title' => $title,
+                'subtitle' => $subtitle,
+                'image' => $imagePath,
+                'link' => $link,
+                'sort_order' => $sortOrder,
+                'is_active' => (int)(bool)$this->getParam('is_active', 1),
+            ]);
+
+            $this->redirectWith('/admin/banners', 'Banner created successfully.', 'success');
+        }
+    }
+
+    public function editBanner($id): void
+    {
+        $banner = Banner::find($id);
+
+        if (!$banner) {
+            $this->redirectWith('/admin/banners', 'Banner not found.', 'error');
             return;
         }
 
-        $imagePath = $this->handleImageUpload($_FILES['image'], 'banners');
-        if (!$imagePath) {
-            $this->redirectWith('/admin/banners', 'Failed to upload image. Allowed types: jpeg, png, gif, webp.', 'error');
-            return;
-        }
+        $db = Database::getInstance();
+        $banners = $db->fetchAll("SELECT * FROM banners ORDER BY sort_order ASC, id DESC");
 
-        Banner::create([
-            'title' => $title,
-            'subtitle' => $subtitle,
-            'image' => $imagePath,
-            'link' => $link,
-            'sort_order' => $sortOrder,
-            'is_active' => (int)(bool)$this->getParam('is_active', 1),
-        ]);
-
-        $this->redirectWith('/admin/banners', 'Banner created successfully.', 'success');
+        $this->renderView('admin/banners', ['banners' => $banners, 'editBanner' => $banner]);
     }
 
     public function toggleBanner($id): void
@@ -887,13 +961,14 @@ class AdminController extends Controller
         $banner = Banner::find($id);
 
         if (!$banner) {
-            $this->renderJSON(['success' => false, 'message' => 'Banner not found.'], 404);
+            $this->redirectWith('/admin/banners', 'Banner not found.', 'error');
             return;
         }
 
         $newActive = $banner->is_active ? 0 : 1;
         Banner::update($id, ['is_active' => $newActive]);
-        $this->renderJSON(['success' => true, 'is_active' => $newActive]);
+
+        $this->redirectWith('/admin/banners', 'Banner ' . ($newActive ? 'activated' : 'deactivated') . ' successfully.', 'success');
     }
 
     public function deleteBanner($id): void
@@ -901,14 +976,14 @@ class AdminController extends Controller
         $banner = Banner::find($id);
 
         if (!$banner) {
-            $this->renderJSON(['success' => false, 'message' => 'Banner not found.'], 404);
+            $this->redirectWith('/admin/banners', 'Banner not found.', 'error');
             return;
         }
 
         $this->deleteImageFile($banner->image);
         Banner::delete($id);
 
-        $this->renderJSON(['success' => true, 'message' => 'Banner deleted successfully.']);
+        $this->redirectWith('/admin/banners', 'Banner deleted successfully.', 'success');
     }
 
     public function settings(): void

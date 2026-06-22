@@ -6,12 +6,15 @@ use App\Core\Database;
 use App\Models\Category;
 use App\Models\Brand;
 use App\Models\Store;
+use App\Models\Product as ProductModel;
+use App\Services\Shipping;
 
 class ShopController extends Controller
 {
     public function index(): void
     {
         $db = Database::getInstance();
+        $this->initGeo();
 
         $page = max(1, (int)$this->getParam('page', 1));
         $perPage = 12;
@@ -84,13 +87,14 @@ class ShopController extends Controller
         $offset = ($page - 1) * $perPage;
 
         $products = $db->fetchAll(
-            "SELECT p.*, 
+            "SELECT p.*, s.store_name, s.slug as store_slug,
                     (SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = p.id AND r.is_approved = 1) as avg_rating,
                     (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id AND r.is_approved = 1) as review_count,
                     (SELECT image FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as primary_image
-             FROM products p 
-             {$where} 
-             ORDER BY {$orderBy} 
+             FROM products p
+             LEFT JOIN stores s ON p.store_id = s.id
+             {$where}
+             ORDER BY {$orderBy}
              LIMIT {$perPage} OFFSET {$offset}",
             $params
         );
@@ -123,6 +127,7 @@ class ShopController extends Controller
     public function category(string $slug): void
     {
         $db = Database::getInstance();
+        $this->initGeo();
 
         $category = Category::findBy('slug', $slug);
         if (!$category || !$category->is_active) {
@@ -154,13 +159,14 @@ class ShopController extends Controller
         $offset = ($page - 1) * $perPage;
 
         $products = $db->fetchAll(
-            "SELECT p.*,
+            "SELECT p.*, s.store_name, s.slug as store_slug,
                     (SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = p.id AND r.is_approved = 1) as avg_rating,
                     (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id AND r.is_approved = 1) as review_count,
                     (SELECT image FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as primary_image
-             FROM products p 
-             WHERE p.category_id IN ({$idPlaceholder}) AND p.is_active = 1 AND p.is_approved = 1 
-             ORDER BY p.id DESC 
+             FROM products p
+             LEFT JOIN stores s ON p.store_id = s.id
+             WHERE p.category_id IN ({$idPlaceholder}) AND p.is_active = 1 AND p.is_approved = 1
+             ORDER BY p.id DESC
              LIMIT {$perPage} OFFSET {$offset}"
         );
 
@@ -184,6 +190,8 @@ class ShopController extends Controller
         }
 
         $db = Database::getInstance();
+        $this->initGeo();
+
         $like = '%' . $query . '%';
         $page = max(1, (int)$this->getParam('page', 1));
         $perPage = 12;
@@ -199,13 +207,14 @@ class ShopController extends Controller
         $offset = ($page - 1) * $perPage;
 
         $products = $db->fetchAll(
-            "SELECT p.*,
+            "SELECT p.*, s.store_name, s.slug as store_slug,
                     (SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = p.id AND r.is_approved = 1) as avg_rating,
                     (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id AND r.is_approved = 1) as review_count,
                     (SELECT image FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as primary_image
-             FROM products p 
-             WHERE p.is_active = 1 AND p.is_approved = 1 AND (p.name LIKE :q OR p.description LIKE :q2) 
-             ORDER BY p.id DESC 
+             FROM products p
+             LEFT JOIN stores s ON p.store_id = s.id
+             WHERE p.is_active = 1 AND p.is_approved = 1 AND (p.name LIKE :q OR p.description LIKE :q2)
+             ORDER BY p.id DESC
              LIMIT {$perPage} OFFSET {$offset}",
             ['q' => $like, 'q2' => $like]
         );
@@ -223,11 +232,12 @@ class ShopController extends Controller
     public function show(string $slug): void
     {
         $db = Database::getInstance();
+        $this->initGeo();
 
         $product = $db->fetch(
-            "SELECT p.*, s.store_name, s.slug as store_slug, s.is_verified as store_verified
-             FROM products p 
-             LEFT JOIN stores s ON p.store_id = s.id 
+            "SELECT p.*, s.store_name, s.slug as store_slug, s.is_verified as store_verified, s.vendor_id
+             FROM products p
+             LEFT JOIN stores s ON p.store_id = s.id
              WHERE p.slug = :slug AND p.is_active = 1 AND p.is_approved = 1",
             ['slug' => $slug]
         );
@@ -276,17 +286,21 @@ class ShopController extends Controller
         );
 
         $relatedProducts = $db->fetchAll(
-            "SELECT p.*, (SELECT image FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as primary_image
-             FROM products p 
-             WHERE p.category_id = :category_id AND p.id != :product_id AND p.is_active = 1 AND p.is_approved = 1 
+            "SELECT p.*, s.store_name, s.slug as store_slug,
+                    (SELECT image FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as primary_image
+             FROM products p
+             LEFT JOIN stores s ON p.store_id = s.id
+             WHERE p.category_id = :category_id AND p.id != :product_id AND p.is_active = 1 AND p.is_approved = 1
              ORDER BY p.id DESC LIMIT 4",
             ['category_id' => $product->category_id, 'product_id' => $product->id]
         );
 
         $storeProducts = $db->fetchAll(
-            "SELECT p.*, (SELECT image FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as primary_image
-             FROM products p 
-             WHERE p.store_id = :store_id AND p.id != :product_id AND p.is_active = 1 AND p.is_approved = 1 
+            "SELECT p.*, s.store_name, s.slug as store_slug,
+                    (SELECT image FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as primary_image
+             FROM products p
+             LEFT JOIN stores s ON p.store_id = s.id
+             WHERE p.store_id = :store_id AND p.id != :product_id AND p.is_active = 1 AND p.is_approved = 1
              ORDER BY p.id DESC LIMIT 4",
             ['store_id' => $product->store_id, 'product_id' => $product->id]
         );
@@ -302,6 +316,16 @@ class ShopController extends Controller
             $canReview = !$existing;
         }
 
+        $shippingService = Shipping::getInstance();
+        $countryCode = $this->geo->getCountryCode();
+        $productPrice = (float)($product->sale_price ?? $product->base_price ?? 0);
+        $shippingInfo = $shippingService->getShippingRate(
+            $product->vendor_id,
+            $countryCode,
+            $productPrice,
+            (float)($product->weight_kg ?? 0)
+        );
+
         $this->renderView('shop/show', [
             'product' => $product,
             'images' => $images,
@@ -312,12 +336,15 @@ class ShopController extends Controller
             'storeProducts' => $storeProducts,
             'category' => $category,
             'canReview' => $canReview,
+            'shippingInfo' => $shippingInfo,
+            'countryCode' => $countryCode,
         ]);
     }
 
     public function store(string $slug): void
     {
         $db = Database::getInstance();
+        $this->initGeo();
 
         $store = Store::findBy('slug', $slug);
         if (!$store || !$store->is_active) {
@@ -343,9 +370,9 @@ class ShopController extends Controller
                     (SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = p.id AND r.is_approved = 1) as avg_rating,
                     (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id AND r.is_approved = 1) as review_count,
                     (SELECT image FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as primary_image
-             FROM products p 
-             WHERE p.store_id = :store_id AND p.is_active = 1 AND p.is_approved = 1 
-             ORDER BY p.id DESC 
+             FROM products p
+             WHERE p.store_id = :store_id AND p.is_active = 1 AND p.is_approved = 1
+             ORDER BY p.id DESC
              LIMIT {$perPage} OFFSET {$offset}",
             ['store_id' => $store->id]
         );
@@ -358,10 +385,14 @@ class ShopController extends Controller
             ['store_id' => $store->id]
         );
 
+        $shippingService = Shipping::getInstance();
+        $vendorShippingRates = $shippingService->getVendorShippingRates($store->vendor_id);
+
         $this->renderView('shop/store', [
             'store' => $store,
             'products' => $products,
             'storeRating' => $storeRating,
+            'vendorShippingRates' => $vendorShippingRates,
             'currentPage' => $page,
             'perPage' => $perPage,
             'total' => $total,

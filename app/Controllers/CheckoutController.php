@@ -14,6 +14,10 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Address;
 use App\Models\Coupon;
+use App\Models\VendorOrder;
+use App\Services\Geolocation;
+use App\Services\Shipping;
+use App\Services\OrderSplitter;
 
 class CheckoutController extends Controller
 {
@@ -53,10 +57,13 @@ class CheckoutController extends Controller
             return;
         }
 
+        $this->initGeo();
+        $countryCode = $this->geo->getCountryCode();
+
         $items = $db->fetchAll(
-            "SELECT ci.*, p.name, p.slug, p.quantity as stock,
+            "SELECT ci.*, p.name, p.slug, p.quantity as stock, p.weight_kg, p.ships_from_country, p.free_shipping,
                     (SELECT pi.image FROM product_images pi WHERE pi.product_id = p.id AND pi.is_primary = 1 LIMIT 1) as image,
-                    s.store_name, s.slug as store_slug
+                    s.store_name, s.slug as store_slug, s.id as store_id, s.vendor_id
              FROM cart_items ci
              JOIN products p ON ci.product_id = p.id
              LEFT JOIN stores s ON p.store_id = s.id
@@ -71,8 +78,28 @@ class CheckoutController extends Controller
         }
 
         $subtotal = 0;
+        $totalWeight = 0;
+        $vendorGroups = [];
+
         foreach ($items as $item) {
-            $subtotal += (float)$item->unit_price * (int)$item->quantity;
+            $itemTotal = (float)$item->unit_price * (int)$item->quantity;
+            $subtotal += $itemTotal;
+            $totalWeight += (float)($item->weight_kg ?? 0) * (int)$item->quantity;
+
+            $vid = (int)$item->vendor_id;
+            if (!isset($vendorGroups[$vid])) {
+                $vendorGroups[$vid] = [
+                    'vendor_id' => $vid,
+                    'store_name' => $item->store_name ?? 'Unknown Store',
+                    'store_slug' => $item->store_slug ?? '',
+                    'items' => [],
+                    'subtotal' => 0,
+                    'total_weight' => 0,
+                ];
+            }
+            $vendorGroups[$vid]['items'][] = $item;
+            $vendorGroups[$vid]['subtotal'] += $itemTotal;
+            $vendorGroups[$vid]['total_weight'] += (float)($item->weight_kg ?? 0) * (int)$item->quantity;
         }
 
         $discount = 0;
@@ -85,9 +112,26 @@ class CheckoutController extends Controller
             }
         }
 
-        $shippingCost = $subtotal >= 200 ? 0 : 15;
+        $shippingService = Shipping::getInstance();
+        $vendorShippingInfo = [];
+
+        foreach ($vendorGroups as $vid => $group) {
+            $shippingInfo = $shippingService->getShippingRate(
+                $vid,
+                $countryCode,
+                $group['subtotal'],
+                $group['total_weight']
+            );
+            $vendorShippingInfo[$vid] = $shippingInfo;
+        }
+
+        $totalShipping = 0;
+        foreach ($vendorShippingInfo as $info) {
+            $totalShipping += $info['rate'];
+        }
+
         $tax = round($subtotal * 0.025, 2);
-        $total = max(0, $subtotal - $discount) + $shippingCost + $tax;
+        $total = max(0, $subtotal - $discount) + $totalShipping + $tax;
 
         $addresses = Address::where('user_id', $userId)->orderBy('is_default', 'DESC')->get();
 
@@ -100,19 +144,25 @@ class CheckoutController extends Controller
         }
 
         $paystackConfig = $this->getPaystackConfig();
+        $currencyData = $this->geo->getCurrencyData();
 
         $this->renderView('checkout/index', [
             'cart' => $cart,
             'items' => $items,
+            'vendorGroups' => $vendorGroups,
+            'vendorShippingInfo' => $vendorShippingInfo,
             'subtotal' => $subtotal,
             'discount' => $discount,
-            'shippingCost' => $shippingCost,
+            'totalShipping' => $totalShipping,
+            'shippingCost' => $totalShipping,
             'tax' => $tax,
             'total' => $total,
             'coupon' => $coupon,
             'addresses' => $addresses,
             'defaultAddress' => $defaultAddress,
             'paystackPublicKey' => $paystackConfig['public_key'],
+            'countryCode' => $countryCode,
+            'currencyCode' => $currencyData->code ?? 'GHS',
         ]);
     }
 
@@ -125,6 +175,12 @@ class CheckoutController extends Controller
         $userId = $this->session->getUserId();
         $user = $this->currentUser;
 
+        $this->initGeo();
+        $countryCode = $this->geo->getCountryCode();
+        $currencyData = $this->geo->getCurrencyData();
+        $currencyCode = $currencyData->code ?? 'GHS';
+        $currencySymbol = $currencyData->symbol ?? 'GH₵';
+
         $cart = $this->getOrCreateCart();
         if (!$cart) {
             $this->redirectWith('/cart', 'Your cart is empty.', 'error');
@@ -132,7 +188,8 @@ class CheckoutController extends Controller
         }
 
         $items = $db->fetchAll(
-            "SELECT ci.*, p.name, COALESCE(p.sale_price, p.base_price) as price, p.slug, p.sku, p.store_id, s.store_name, p.vendor_id
+            "SELECT ci.*, p.name, COALESCE(p.sale_price, p.base_price) as price, p.slug, p.sku, p.store_id, p.weight_kg,
+                    s.store_name, s.vendor_id, s.commission_rate as store_commission
              FROM cart_items ci
              JOIN products p ON ci.product_id = p.id
              LEFT JOIN stores s ON p.store_id = s.id
@@ -168,6 +225,7 @@ class CheckoutController extends Controller
             'state' => $address->state ?? '',
             'postal_code' => $address->postal_code ?? '',
             'country' => $address->country ?? 'Ghana',
+            'country_code' => $countryCode,
         ]);
 
         $subtotal = 0;
@@ -185,11 +243,8 @@ class CheckoutController extends Controller
         }
 
         $settings = $this->getSettings();
-        $shippingCost = (float)($settings['shipping_fee'] ?? 5000);
-        $taxRate = (float)($settings['tax_rate'] ?? 7.5);
+        $taxRate = (float)($settings['tax_rate'] ?? 2.5);
         $tax = round($subtotal * $taxRate / 100, 2);
-        $total = max(0, $subtotal - $discount) + $shippingCost + $tax;
-
         $notes = Validator::sanitizeString($this->getParam('notes', ''));
 
         $db->beginTransaction();
@@ -202,19 +257,23 @@ class CheckoutController extends Controller
                 'order_number' => $orderNumber,
                 'order_status' => 'pending',
                 'subtotal' => $subtotal,
-                'shipping_cost' => $shippingCost,
+                'shipping_cost' => 0,
                 'tax' => $tax,
                 'discount' => $discount,
                 'coupon_code' => $coupon->code ?? null,
-                'total' => $total,
+                'total' => $subtotal - $discount + $tax,
                 'payment_method' => 'paystack',
                 'payment_status' => 'pending',
                 'notes' => $notes,
+                'currency_code' => $currencyCode,
+                'currency_symbol' => $currencySymbol,
+                'exchange_rate' => $currencyData->exchange_rate ?? 1.000000,
+                'shipping_country_code' => $countryCode,
             ]);
 
             foreach ($items as $item) {
                 $itemTotal = (float)$item->unit_price * (int)$item->quantity;
-                $commissionRate = (float)($settings['commission_rate'] ?? 10);
+                $commissionRate = (float)($item->store_commission ?? $settings['commission_rate'] ?? 10);
                 $commissionAmount = round($itemTotal * $commissionRate / 100, 2);
                 OrderItem::create([
                     'order_id' => $orderId,
@@ -236,13 +295,26 @@ class CheckoutController extends Controller
                 $coupon->incrementUsed($coupon);
             }
 
+            $splitter = new OrderSplitter();
+            $vendorOrders = $splitter->execute($orderId, $items, $countryCode, $discount, $coupon->code ?? null);
+
+            $totalShipping = 0;
+            foreach ($vendorOrders as $vo) {
+                $totalShipping += $vo['shipping_cost'];
+            }
+            $grandTotal = max(0, $subtotal - $discount) + $totalShipping + $tax;
+            Order::update($orderId, [
+                'shipping_cost' => $totalShipping,
+                'total' => $grandTotal,
+            ]);
+
             $reference = 'CELER-' . strtoupper(bin2hex(random_bytes(8)));
             $paymentId = Payment::create([
                 'order_id' => $orderId,
                 'payment_method' => 'paystack',
                 'payment_reference' => $reference,
-                'amount' => $total,
-                'currency' => 'GHS',
+                'amount' => $grandTotal,
+                'currency' => $currencyCode,
                 'status' => 'pending',
             ]);
 
@@ -254,11 +326,11 @@ class CheckoutController extends Controller
         }
 
         $paystackConfig = $this->getPaystackConfig();
-        $amountInPesewas = (int)round($total * 100);
+        $amountInSmallest = (int)round($grandTotal * 100);
 
         $postData = [
             'email' => $user->email ?? $this->session->get('user_email', ''),
-            'amount' => $amountInPesewas,
+            'amount' => $amountInSmallest,
             'reference' => $reference,
             'callback_url' => $paystackConfig['callback_url'],
             'currency' => $paystackConfig['currency'],
@@ -266,6 +338,8 @@ class CheckoutController extends Controller
                 'order_id' => $orderId,
                 'order_number' => $orderNumber,
                 'user_id' => $userId,
+                'country_code' => $countryCode,
+                'currency_code' => $currencyCode,
             ],
         ];
 
@@ -289,7 +363,7 @@ class CheckoutController extends Controller
 
         if ($curlError || $httpCode !== 200) {
             $db->update('payments', ['status' => 'failed'], 'id = :id', ['id' => $paymentId]);
-            $db->update('orders', ['status' => 'failed'], 'id = :id', ['id' => $orderId]);
+            $db->update('orders', ['order_status' => 'failed'], 'id = :id', ['id' => $orderId]);
             $this->redirectWith('/checkout', 'Payment initialization failed. Please try again.', 'error');
             return;
         }
@@ -297,7 +371,7 @@ class CheckoutController extends Controller
         $result = json_decode($response, true);
         if (!is_array($result) || !($result['status'] ?? false)) {
             $db->update('payments', ['status' => 'failed'], 'id = :id', ['id' => $paymentId]);
-            $db->update('orders', ['status' => 'failed'], 'id = :id', ['id' => $orderId]);
+            $db->update('orders', ['order_status' => 'failed'], 'id = :id', ['id' => $orderId]);
             $this->redirectWith('/checkout', $result['message'] ?? 'Payment initialization failed.', 'error');
             return;
         }
@@ -313,7 +387,7 @@ class CheckoutController extends Controller
 
         $reference = $this->getParam('reference', '');
         if (empty($reference)) {
-            $this->redirectWith('/orders', 'Invalid payment reference.', 'error');
+            $this->redirectWith('/dashboard/orders', 'Invalid payment reference.', 'error');
             return;
         }
 
@@ -334,42 +408,49 @@ class CheckoutController extends Controller
         curl_close($ch);
 
         if ($httpCode !== 200) {
-            $this->redirectWith('/orders', 'Could not verify payment. Please contact support.', 'error');
+            $this->redirectWith('/dashboard/orders', 'Could not verify payment. Please contact support.', 'error');
             return;
         }
 
         $result = json_decode($response, true);
         if (!is_array($result) || !($result['status'] ?? false) || !($result['data']['status'] ?? false)) {
-            $this->redirectWith('/orders', 'Payment verification failed.', 'error');
+            $this->redirectWith('/dashboard/orders', 'Payment verification failed.', 'error');
             return;
         }
 
         $paymentData = $result['data'];
         $db = Database::getInstance();
 
-        $payment = Payment::scopeByReference($reference);
+        $payment = $db->fetch("SELECT * FROM payments WHERE paystack_reference = :ref OR payment_reference = :ref2 LIMIT 1",
+            ['ref' => $reference, 'ref2' => $reference]
+        );
         if (!$payment) {
-            $this->redirectWith('/orders', 'Payment record not found.', 'error');
+            $this->redirectWith('/dashboard/orders', 'Payment record not found.', 'error');
             return;
         }
 
         $orderId = $payment->order_id;
         $order = Order::find($orderId);
         if (!$order) {
-            $this->redirectWith('/orders', 'Order not found.', 'error');
+            $this->redirectWith('/dashboard/orders', 'Order not found.', 'error');
             return;
         }
 
         if ($paymentData['status'] === 'success') {
             $db->update('payments', [
-                'status' => 'completed',
+                'status' => 'success',
                 'paid_at' => date('Y-m-d H:i:s'),
             ], 'id = :id', ['id' => $payment->id]);
 
             $db->update('orders', [
-                'status' => 'processing',
+                'order_status' => 'processing',
                 'payment_status' => 'paid',
+                'paid_at' => date('Y-m-d H:i:s'),
             ], 'id = :id', ['id' => $orderId]);
+
+            $db->update('vendor_orders', [
+                'status' => 'processing',
+            ], 'parent_order_id = :oid', ['oid' => $orderId]);
 
             $cart = Cart::getCartForUser($this->session->getUserId());
             if ($cart) {
@@ -378,16 +459,10 @@ class CheckoutController extends Controller
             }
 
             $this->session->remove('pending_order_id');
-            $this->redirectWith('/orders/' . $orderId, 'Payment successful! Your order has been placed.', 'success');
+            $this->redirectWith('/dashboard/orders/' . $orderId, 'Payment successful! Your order has been placed.', 'success');
         } else {
-            $db->update('payments', [
-                'status' => 'failed',
-            ], 'id = :id', ['id' => $payment->id]);
-
-            $db->update('orders', [
-                'status' => 'failed',
-                'payment_status' => 'failed',
-            ], 'id = :id', ['id' => $orderId]);
+            $db->update('payments', ['status' => 'failed'], 'id = :id', ['id' => $payment->id]);
+            $db->update('orders', ['order_status' => 'failed', 'payment_status' => 'failed'], 'id = :id', ['id' => $orderId]);
 
             $this->redirectWith('/checkout', 'Payment was not successful. Please try again.', 'error');
         }
@@ -420,8 +495,6 @@ class CheckoutController extends Controller
 
         if ($event === 'charge.success') {
             $reference = $data['reference'] ?? '';
-            $status = $data['status'] ?? '';
-
             if (empty($reference)) {
                 http_response_code(400);
                 echo json_encode(['status' => 'error', 'message' => 'Missing reference']);
@@ -429,7 +502,10 @@ class CheckoutController extends Controller
             }
 
             $db = Database::getInstance();
-            $payment = Payment::scopeByReference($reference);
+            $payment = $db->fetch(
+                "SELECT * FROM payments WHERE paystack_reference = :ref OR payment_reference = :ref2 LIMIT 1",
+                ['ref' => $reference, 'ref2' => $reference]
+            );
 
             if (!$payment) {
                 http_response_code(404);
@@ -437,7 +513,7 @@ class CheckoutController extends Controller
                 exit;
             }
 
-            if ($payment->status === 'completed') {
+            if ($payment->status === 'success') {
                 http_response_code(200);
                 echo json_encode(['status' => 'success', 'message' => 'Already processed']);
                 exit;
@@ -449,7 +525,6 @@ class CheckoutController extends Controller
             if (abs($amountPaid - $expectedAmount) > 0.01) {
                 $db->update('payments', [
                     'status' => 'failed',
-                    'notes' => 'Amount mismatch: paid ' . $amountPaid . ', expected ' . $expectedAmount,
                 ], 'id = :id', ['id' => $payment->id]);
 
                 http_response_code(200);
@@ -460,14 +535,19 @@ class CheckoutController extends Controller
             $db->beginTransaction();
             try {
                 $db->update('payments', [
-                    'status' => 'completed',
+                    'status' => 'success',
                     'paid_at' => date('Y-m-d H:i:s'),
                 ], 'id = :id', ['id' => $payment->id]);
 
                 $db->update('orders', [
-                    'status' => 'processing',
+                    'order_status' => 'processing',
                     'payment_status' => 'paid',
+                    'paid_at' => date('Y-m-d H:i:s'),
                 ], 'id = :id', ['id' => $payment->order_id]);
+
+                $db->update('vendor_orders', [
+                    'status' => 'processing',
+                ], 'parent_order_id = :oid', ['oid' => $payment->order_id]);
 
                 $db->commit();
             } catch (\Exception $e) {

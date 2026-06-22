@@ -29,11 +29,12 @@
                     <?php
                     $isActive = $banner->active ?? $banner['active'] ?? $banner->is_active ?? $banner['is_active'] ?? true;
                     $image = $banner->image ?? $banner['image'] ?? '';
+                    $imageUrl = $image ? ((str_starts_with($image, '/') || str_starts_with($image, 'http')) ? $image : '/' . $image) : '';
                     ?>
                     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden group">
                         <div class="relative h-44 bg-gray-100 dark:bg-gray-700 overflow-hidden">
-                            <?php if ($image): ?>
-                                <img src="<?= htmlspecialchars($image) ?>" alt="" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                            <?php if ($imageUrl): ?>
+                                <img src="<?= htmlspecialchars($imageUrl) ?>" alt="" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                             <?php else: ?>
                                 <div class="w-full h-full flex items-center justify-center">
                                     <i class="fas fa-image text-gray-400 text-4xl"></i>
@@ -57,6 +58,9 @@
                                 <p class="text-xs text-primary-600 dark:text-primary-400 truncate mb-3"><i class="fas fa-link mr-1"></i><?= htmlspecialchars($banner->link ?? $banner['link'] ?? '') ?></p>
                             <?php endif; ?>
                             <div class="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                                <a href="/admin/banners/<?= htmlspecialchars($banner->id ?? $banner['id'] ?? 0) ?>/edit" class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-xs font-medium rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
                                 <form action="/admin/banners/<?= htmlspecialchars($banner->id ?? $banner['id'] ?? 0) ?>/toggle" method="POST" class="inline">
                                     <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($_SESSION['_csrf_token'] ?? '') ?>">
                                     <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 <?= $isActive ? 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' ?> text-xs font-medium rounded-lg hover:bg-opacity-80 transition">
@@ -103,9 +107,10 @@
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Banner Image</label>
                         <div class="flex items-center gap-4">
                             <?php $editImage = $editBanner->image ?? $editBanner['image'] ?? ''; ?>
-                            <?php if ($editImage): ?>
+                            <?php $editImageUrl = $editImage ? ((str_starts_with($editImage, '/') || str_starts_with($editImage, 'http')) ? $editImage : '/' . $editImage) : ''; ?>
+                            <?php if ($editImageUrl): ?>
                                 <div class="w-24 h-16 rounded-lg bg-gray-100 dark:bg-gray-700 overflow-hidden flex-shrink-0">
-                                    <img src="<?= htmlspecialchars($editImage) ?>" alt="" class="w-full h-full object-cover">
+                                    <img src="<?= htmlspecialchars($editImageUrl) ?>" alt="" class="w-full h-full object-cover">
                                 </div>
                             <?php endif; ?>
                             <input type="file" name="image" accept="image/*" class="flex-1 text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 dark:file:bg-primary-900/20 file:text-primary-700 dark:file:text-primary-400 hover:file:bg-primary-100 dark:hover:file:bg-primary-900/40" <?= isset($editBanner) ? '' : 'required' ?>>

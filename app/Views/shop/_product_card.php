@@ -3,19 +3,20 @@ $p = $product;
 $pId = $p->id ?? $p['id'] ?? 0;
 $pSlug = $p->slug ?? $p['slug'] ?? '';
 $pName = $p->name ?? $p['name'] ?? '';
-$pImage = $p->image ?? $p['images'][0] ?? $p['image_url'] ?? '';
-$pPrice = (float)($p->price ?? $p['price'] ?? 0);
+$pImage = $p->primary_image ?? $p->image ?? $p['primary_image'] ?? $p['image'] ?? ($p['images'][0] ?? '');
+$pPrice = (float)($p->base_price ?? $p->price ?? $p['base_price'] ?? $p['price'] ?? 0);
 $pSalePrice = (float)($p->sale_price ?? $p['sale_price'] ?? 0);
-$pRating = (float)($p->rating ?? $p['rating'] ?? 0);
-$pReviews = (int)($p->reviews_count ?? $p['reviews_count'] ?? $p->reviews ?? $p['reviews'] ?? 0);
-$pCurrency = $p->currency ?? $p['currency'] ?? 'GHS';
+$pRating = (float)($p->avg_rating ?? $p->rating ?? $p['avg_rating'] ?? $p['rating'] ?? 0);
+$pReviews = (int)($p->review_count ?? $p->reviews_count ?? $p['review_count'] ?? $p['reviews_count'] ?? $p->reviews ?? $p['reviews'] ?? 0);
+$pStoreName = $p->store_name ?? $p['store_name'] ?? '';
+$pStoreSlug = $p->store_slug ?? $p['store_slug'] ?? '';
 $hasDiscount = $pSalePrice > 0 && $pSalePrice < $pPrice;
 $displayPrice = $hasDiscount ? $pSalePrice : $pPrice;
 $discountPercent = $hasDiscount ? round((1 - $pSalePrice / $pPrice) * 100) : 0;
-$currencySymbol = $pCurrency === 'GHS' ? 'GH₵' : ($pCurrency === 'USD' ? '$' : $pCurrency . ' ');
+$currencySymbol = $geo_currency_symbol ?? 'GH₵';
 ?>
 <div class="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
-    <a href="/shop/<?= htmlspecialchars($pSlug) ?>" class="relative block aspect-square overflow-hidden bg-gray-100 dark:bg-gray-700">
+    <a href="<?= $url('/shop/' . $pSlug) ?>" class="relative block aspect-square overflow-hidden bg-gray-100 dark:bg-gray-700">
         <?php if ($pImage): ?>
             <img src="<?= htmlspecialchars($pImage) ?>" alt="<?= htmlspecialchars($pName) ?>" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
         <?php else: ?>
@@ -27,12 +28,17 @@ $currencySymbol = $pCurrency === 'GHS' ? 'GH₵' : ($pCurrency === 'USD' ? '$' :
             <span class="absolute top-2 left-2 px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-md shadow-sm">-<?= $discountPercent ?>%</span>
         <?php endif; ?>
         <button type="button" data-product-id="<?= $pId ?>" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 flex items-center justify-center text-gray-400 hover:text-red-500 transition shadow-sm wishlist-btn" aria-label="Add to wishlist"><i class="far fa-heart"></i></button>
-        <div class="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+        <div class="absolute inset-x-0 bottom-0 p-3 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
             <span class="text-white text-xs font-medium"><i class="fas fa-eye mr-1"></i> Quick View</span>
         </div>
     </a>
     <div class="p-3 sm:p-4 flex flex-col flex-1">
-        <a href="/shop/<?= htmlspecialchars($pSlug) ?>" class="text-sm font-medium text-gray-800 dark:text-gray-200 hover:text-primary-700 dark:hover:text-primary-400 transition line-clamp-2 mb-1.5"><?= htmlspecialchars($pName) ?></a>
+        <?php if ($pStoreName && $pStoreSlug): ?>
+            <a href="<?= $url('/shop/store/' . $pStoreSlug) ?>" class="text-[11px] font-medium text-primary-700 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 transition mb-1 truncate">
+                <i class="fas fa-store-alt mr-0.5"></i><?= htmlspecialchars($pStoreName) ?>
+            </a>
+        <?php endif; ?>
+        <a href="<?= $url('/shop/' . $pSlug) ?>" class="text-sm font-medium text-gray-800 dark:text-gray-200 hover:text-primary-700 dark:hover:text-primary-400 transition line-clamp-2 mb-1.5"><?= htmlspecialchars($pName) ?></a>
         <?php if ($pRating > 0): ?>
             <div class="flex items-center gap-1.5 mb-1.5">
                 <div class="flex items-center text-yellow-400 text-xs">

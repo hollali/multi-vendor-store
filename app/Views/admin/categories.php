@@ -18,7 +18,7 @@
             <div class="lg:col-span-1">
                 <div id="categoryForm" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 sticky top-24">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4"><?= isset($editCategory) ? 'Edit Category' : 'New Category' ?></h2>
-                    <form action="/admin/categories/save" method="POST">
+                    <form action="/admin/categories" method="POST">
                         <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($_SESSION['_csrf_token'] ?? '') ?>">
                         <?php if (isset($editCategory)): ?>
                             <input type="hidden" name="id" value="<?= htmlspecialchars($editCategory->id ?? $editCategory['id'] ?? '') ?>">

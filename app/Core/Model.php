@@ -62,19 +62,51 @@ class Model
     {
         $instance = new static();
         $column = $args[0];
-        $operator = $args[1] ?? '=';
-        $value = $args[2] ?? $args[1] ?? null;
 
         if (count($args) === 2) {
             $value = $args[1];
             $operator = '=';
+        } else {
+            $value = $args[1];
+            $operator = $args[2] ?? '=';
         }
 
         $instance->builderType = 'select';
-        $paramKey = str_replace('.', '_', $column) . '_' . uniqid();
-        $instance->queryBuilder = "SELECT * FROM " . static::$table . " WHERE {$column} {$operator} :{$paramKey}";
-        $instance->bindings[$paramKey] = $value;
+
+        if (strtoupper($operator) === 'IS') {
+            $nullCheck = $value === null ? 'NULL' : 'NOT NULL';
+            $instance->queryBuilder = "SELECT * FROM " . static::$table . " WHERE {$column} IS {$nullCheck}";
+        } else {
+            $paramKey = str_replace('.', '_', $column) . '_' . uniqid();
+            $instance->queryBuilder = "SELECT * FROM " . static::$table . " WHERE {$column} {$operator} :{$paramKey}";
+            $instance->bindings[$paramKey] = $value;
+        }
+
         return $instance;
+    }
+
+    public function orWhere(...$args): static
+    {
+        $column = $args[0];
+
+        if (count($args) === 2) {
+            $value = $args[1];
+            $operator = '=';
+        } else {
+            $value = $args[1];
+            $operator = $args[2] ?? '=';
+        }
+
+        if (strtoupper($operator) === 'IS') {
+            $nullCheck = $value === null ? 'NULL' : 'NOT NULL';
+            $this->queryBuilder .= " OR {$column} IS {$nullCheck}";
+        } else {
+            $paramKey = str_replace('.', '_', $column) . '_' . uniqid();
+            $this->queryBuilder .= " OR {$column} {$operator} :{$paramKey}";
+            $this->bindings[$paramKey] = $value;
+        }
+
+        return $this;
     }
 
     public function orderBy(string $column, string $direction = 'ASC'): static

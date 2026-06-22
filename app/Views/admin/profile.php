@@ -17,7 +17,7 @@
                 <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($_SESSION['_csrf_token'] ?? '') ?>">
 
                 <div class="flex items-center gap-6">
-                    <div class="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-3xl font-bold ring-4 ring-gray-50 dark:ring-gray-800">
+                    <div class="w-20 h-20 rounded-full bg-primary-600 flex items-center justify-center text-white text-3xl font-bold ring-4 ring-gray-50 dark:ring-gray-800">
                         <?= strtoupper(substr($profileUser->first_name ?? $profileUser['first_name'] ?? 'A', 0, 1)) ?>
                     </div>
                     <div>

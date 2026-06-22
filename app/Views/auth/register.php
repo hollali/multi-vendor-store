@@ -12,7 +12,7 @@ $selectedRole = $old['role'] ?? 'customer';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= htmlspecialchars($_SESSION['_csrf_token'] ?? '') ?>">
-    <title>Create Account | The Middle Man</title>
+    <title>Create Account | Celer Market</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -34,8 +34,8 @@ $selectedRole = $old['role'] ?? 'customer';
 <body class="bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-200 antialiased min-h-screen flex items-center justify-center p-4">
     <div class="absolute top-4 left-4">
         <a href="/" class="flex items-center gap-2">
-            <img src="/uploads/logos/logo1.png" alt="The Middle Man" class="h-8 w-auto">
-            <span class="text-lg font-extrabold bg-gradient-to-r from-primary-700 to-accent-600 bg-clip-text text-transparent">The Middle Man</span>
+            <img src="/uploads/logos/logo1.png" alt="Celer Market" class="h-8 w-auto">
+            <span class="text-lg font-extrabold text-primary-700 dark:text-primary-400">Celer Market</span>
         </a>
     </div>
 
@@ -49,11 +49,11 @@ $selectedRole = $old['role'] ?? 'customer';
     <div class="w-full max-w-md">
         <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-8">
             <div class="text-center mb-7">
-                <div class="w-14 h-14 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/30 dark:to-primary-800/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <div class="w-14 h-14 bg-primary-50 dark:bg-primary-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
                     <i class="fas fa-user-plus text-2xl text-primary-700 dark:text-primary-400"></i>
                 </div>
                 <h1 class="text-2xl font-extrabold text-gray-900 dark:text-white">Create Account</h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Join The Middle Man today</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Join Celer Market today</p>
             </div>
 
             <?php if ($error): ?>
@@ -87,14 +87,6 @@ $selectedRole = $old['role'] ?? 'customer';
                             <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                             <input type="text" id="last_name" name="last_name" value="<?= htmlspecialchars($old['last_name'] ?? '') ?>" required placeholder="Doe" class="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:text-gray-200 placeholder-gray-400 transition">
                         </div>
-                    </div>
-                </div>
-
-                <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Full Name</label>
-                    <div class="relative">
-                        <i class="fas fa-id-card absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                        <input type="text" id="name" name="name" value="<?= htmlspecialchars($old['name'] ?? '') ?>" placeholder="John Doe" class="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:text-gray-200 placeholder-gray-400 transition">
                     </div>
                 </div>
 
@@ -154,7 +146,7 @@ $selectedRole = $old['role'] ?? 'customer';
                     <span class="text-sm text-gray-600 dark:text-gray-400">I agree to the <a href="/terms" class="font-medium text-primary-700 dark:text-primary-400 hover:underline">Terms of Service</a> and <a href="/privacy" class="font-medium text-primary-700 dark:text-primary-400 hover:underline">Privacy Policy</a></span>
                 </label>
 
-                <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-primary-700 to-primary-600 hover:from-primary-800 hover:to-primary-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all text-sm">
+                <button type="submit" class="w-full py-2.5 bg-primary-700 hover:bg-primary-800 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all text-sm">
                     Create Account
                 </button>
             </form>

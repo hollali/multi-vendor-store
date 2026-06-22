@@ -67,19 +67,23 @@ class Validator
 
             case 'min':
                 $min = (int)$params[0];
-                if (is_numeric($value) && (float)$value < $min) {
+                if (is_string($value)) {
+                    if (strlen($value) < $min) {
+                        $this->addError($field, $rule, "{$field} must be at least {$min} characters");
+                    }
+                } elseif (is_numeric($value) && (float)$value < $min) {
                     $this->addError($field, $rule, "{$field} must be at least {$min}");
-                } elseif (is_string($value) && strlen($value) < $min) {
-                    $this->addError($field, $rule, "{$field} must be at least {$min} characters");
                 }
                 break;
 
             case 'max':
                 $max = (int)$params[0];
-                if (is_numeric($value) && (float)$value > $max) {
+                if (is_string($value)) {
+                    if (strlen($value) > $max) {
+                        $this->addError($field, $rule, "{$field} must not exceed {$max} characters");
+                    }
+                } elseif (is_numeric($value) && (float)$value > $max) {
                     $this->addError($field, $rule, "{$field} must not exceed {$max}");
-                } elseif (is_string($value) && strlen($value) > $max) {
-                    $this->addError($field, $rule, "{$field} must not exceed {$max} characters");
                 }
                 break;
 

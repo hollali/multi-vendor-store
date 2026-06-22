@@ -155,8 +155,8 @@
                                        placeholder="0">
                             </div>
                             <div>
-                                <label for="sku" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">SKU <span class="text-red-500">*</span></label>
-                                <input type="text" id="sku" name="sku" value="<?= htmlspecialchars($product->sku ?? $product['sku'] ?? '') ?>" required
+                                <label for="sku" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">SKU</label>
+                                <input type="text" id="sku" name="sku" value="<?= htmlspecialchars($product->sku ?? $product['sku'] ?? '') ?>"
                                        class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
                                        placeholder="e.g. WH-001">
                             </div>

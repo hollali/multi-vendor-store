@@ -23,7 +23,7 @@
                             <?php if ($avatar): ?>
                                 <img src="<?= htmlspecialchars($avatar) ?>" alt="Avatar" class="w-full h-full object-cover" id="avatar-preview">
                             <?php else: ?>
-                                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-500 to-primary-700 text-white text-3xl font-bold" id="avatar-placeholder">
+                                <div class="w-full h-full flex items-center justify-center bg-primary-600 text-white text-3xl font-bold" id="avatar-placeholder">
                                     <?= strtoupper(substr($user->name ?? $user['name'] ?? 'U', 0, 1)) ?>
                                 </div>
                             <?php endif; ?>

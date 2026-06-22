@@ -51,6 +51,21 @@ $router = new Router();
 $router->get('/', 'HomeController@index');
 $router->get('/home', 'HomeController@index');
 
+// Geolocation & Localization
+$router->post('/geo/set-country', 'GeolocationController@setCountry');
+$router->post('/geo/set-currency', 'GeolocationController@setCurrency');
+$router->get('/geo/countries', 'GeolocationController@getCountries');
+$router->get('/geo/currencies', 'GeolocationController@getCurrencies');
+$router->get('/geo/detect', 'GeolocationController@detect');
+$router->get('/geo/shipping-zones', 'GeolocationController@getShippingZones');
+
+// API - Search & Suggestions
+$router->get('/api/products', 'ApiController@products');
+$router->get('/api/products/{id}', 'ApiController@productDetail');
+$router->get('/api/categories', 'ApiController@categories');
+$router->get('/api/stores', 'ApiController@stores');
+$router->get('/api/search/suggestions', 'ApiController@searchSuggestions');
+
 // Auth
 $router->get('/login', 'AuthController@loginForm', 'guest');
 $router->post('/login', 'AuthController@login');
@@ -63,10 +78,13 @@ $router->get('/reset-password/{token}', 'AuthController@resetPasswordForm', 'gue
 $router->post('/reset-password', 'AuthController@resetPassword');
 $router->get('/auth/google', 'AuthController@redirectToGoogle');
 $router->get('/auth/google/callback', 'AuthController@handleGoogleCallback');
+$router->get('/become-vendor', 'AuthController@becomeVendorForm', 'auth');
+$router->post('/become-vendor', 'AuthController@becomeVendor', 'auth');
 
 // Shop
 $router->get('/shop', 'ShopController@index');
 $router->get('/shop/category/{slug}', 'ShopController@category');
+$router->get('/category/{slug}', 'ShopController@category');
 $router->get('/shop/search', 'ShopController@search');
 $router->get('/product/{slug}', 'ShopController@show');
 $router->get('/store/{slug}', 'ShopController@store');
@@ -121,8 +139,10 @@ $router->post('/vendor/coupons/{id}/delete', 'VendorController@deleteCoupon', 'v
 $router->get('/vendor/earnings', 'VendorController@earnings', 'vendor');
 $router->get('/vendor/withdrawals', 'VendorController@withdrawals', 'vendor');
 $router->post('/vendor/withdrawals', 'VendorController@requestWithdrawal', 'vendor');
-$router->get('/vendor/store', 'VendorController@storeSettings', 'vendor');
-$router->post('/vendor/store', 'VendorController@updateStore', 'vendor');
+$router->get('/vendor/store-settings', 'VendorController@storeSettings', 'vendor');
+$router->post('/vendor/store-settings', 'VendorController@updateStore', 'vendor');
+$router->get('/vendor/shipping', 'VendorController@shippingRates', 'vendor');
+$router->post('/vendor/shipping/save', 'VendorController@saveShippingRate', 'vendor');
 $router->get('/vendor/notifications', 'VendorController@notifications', 'vendor');
 
 // Admin Dashboard
@@ -149,6 +169,7 @@ $router->get('/admin/withdrawals', 'AdminController@withdrawals', 'admin');
 $router->post('/admin/withdrawals/{id}/process', 'AdminController@processWithdrawal', 'admin');
 $router->get('/admin/banners', 'AdminController@banners', 'admin');
 $router->post('/admin/banners', 'AdminController@storeBanner', 'admin');
+$router->get('/admin/banners/{id}/edit', 'AdminController@editBanner', 'admin');
 $router->post('/admin/banners/{id}/toggle', 'AdminController@toggleBanner', 'admin');
 $router->post('/admin/banners/{id}/delete', 'AdminController@deleteBanner', 'admin');
 $router->get('/admin/settings', 'AdminController@settings', 'admin');
@@ -158,12 +179,6 @@ $router->post('/admin/notifications/send', 'AdminController@sendNotification', '
 $router->get('/admin/profile', 'AdminController@profile', 'admin');
 $router->post('/admin/profile', 'AdminController@updateProfile', 'admin');
 $router->post('/admin/profile/password', 'AdminController@updatePassword', 'admin');
-
-// API
-$router->get('/api/products', 'ApiController@products');
-$router->get('/api/products/{id}', 'ApiController@productDetail');
-$router->get('/api/categories', 'ApiController@categories');
-$router->get('/api/stores', 'ApiController@stores');
 
 $basePath = dirname($_SERVER['SCRIPT_NAME']);
 $uri = $_SERVER['REQUEST_URI'] ?? '/';

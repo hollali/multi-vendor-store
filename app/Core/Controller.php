@@ -1,11 +1,16 @@
 <?php
 namespace App\Core;
 
+use App\Services\Geolocation;
+use App\Services\Currency;
+
 class Controller
 {
     protected Session $session;
     protected Validator $validator;
     protected array|\stdClass|null $currentUser = null;
+    protected ?Geolocation $geo = null;
+    protected ?Currency $currencyService = null;
 
     public function __construct()
     {
@@ -14,8 +19,18 @@ class Controller
         $this->currentUser = $this->session->get('user_data');
     }
 
+    protected function initGeo(): void
+    {
+        if ($this->geo === null) {
+            $this->geo = Geolocation::getInstance();
+            $this->currencyService = Currency::getInstance();
+        }
+    }
+
     protected function renderView(string $view, array $data = []): void
     {
+        $this->initGeo();
+
         $data['user'] = $this->currentUser;
         $data = $this->normalizeData($data);
         $data['session'] = $this->session;
@@ -35,8 +50,19 @@ class Controller
             }
             return $messages;
         };
-        $data['currency_symbol'] = 'GH₵';
-        $data['site_name'] = 'The Middle Man';
+
+        $currencyData = $this->geo->getCurrencyData();
+        $countryData = $this->geo->getCountryData();
+
+        $data['geo_country_code'] = $this->geo->getCountryCode();
+        $data['geo_country_name'] = $countryData->name ?? 'Ghana';
+        $data['geo_currency_code'] = $this->geo->getCurrencyCode();
+        $data['geo_currency_symbol'] = $currencyData->symbol ?? 'GH₵';
+        $data['geo_all_countries'] = $this->geo->getAllCountries();
+        $data['geo_all_currencies'] = $this->geo->getAllCurrencies();
+
+        $data['currency_symbol'] = $data['geo_currency_symbol'];
+        $data['site_name'] = 'Celer Market';
 
         $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
         $data['baseUrl'] = $basePath;
@@ -128,7 +154,20 @@ class Controller
 
     protected function formatPrice($amount): string
     {
+        $this->initGeo();
+        if ($this->geo) {
+            return $this->geo->formatPrice((float)$amount);
+        }
         return 'GH₵' . number_format((float)$amount, 2);
+    }
+
+    protected function formatPriceInCurrency($amountInGhs, string $currencyCode): string
+    {
+        $this->initGeo();
+        if ($this->currencyService) {
+            return $this->currencyService->formatFromGHS((float)$amountInGhs, $currencyCode);
+        }
+        return 'GH₵' . number_format((float)$amountInGhs, 2);
     }
 
     private function normalizeData(array $data): array

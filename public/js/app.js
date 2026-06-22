@@ -1,6 +1,11 @@
 (function () {
     'use strict';
 
+    var baseUrl = function() {
+        var meta = document.querySelector('meta[name="base-url"]');
+        return meta ? meta.getAttribute('content') : '';
+    }();
+
     /* Dark mode toggle */
     function initDarkMode() {
         const saved = localStorage.getItem('darkMode');
@@ -90,7 +95,7 @@
                 formData.append('quantity', quantity);
                 if (variantId) formData.append('variant_id', variantId);
 
-                fetch('/cart/add', {
+                fetch(baseUrl + '/cart/add', {
                     method: 'POST',
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
                     body: formData
@@ -126,7 +131,7 @@
                 e.preventDefault();
                 const productId = this.dataset.productId;
 
-                fetch('/wishlist/toggle', {
+                fetch(baseUrl + '/wishlist/toggle', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -219,7 +224,7 @@
             }
 
             debounceTimer = setTimeout(function () {
-                fetch('/api/products?search=' + encodeURIComponent(query) + '&per_page=5')
+                fetch(baseUrl + '/api/products?search=' + encodeURIComponent(query) + '&per_page=5')
                     .then(function (res) { return res.json(); })
                     .then(function (data) {
                         if (!suggestions) return;
@@ -227,7 +232,7 @@
                         if (data.data && data.data.length) {
                             data.data.forEach(function (p) {
                                 const a = document.createElement('a');
-                                a.href = '/product/' + p.slug;
+                                a.href = baseUrl + '/product/' + p.slug;
                                 a.className = 'block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm';
                                 a.textContent = p.name;
                                 suggestions.appendChild(a);

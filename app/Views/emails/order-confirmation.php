@@ -11,7 +11,7 @@
                 <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <tr>
                         <td style="background: #1D4ED8; padding: 24px 20px; text-align: center;">
-                            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">The Middle Man</h1>
+                            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Celer Market</h1>
                         </td>
                     </tr>
                     <tr>
@@ -38,7 +38,7 @@
                     </tr>
                     <tr>
                         <td style="background: #f3f4f6; padding: 16px 30px; text-align: center;">
-                            <p style="color: #6b7280; font-size: 13px; margin: 0;">&copy; <?= date('Y') ?> The Middle Man &mdash; Ghana</p>
+                            <p style="color: #6b7280; font-size: 13px; margin: 0;">&copy; <?= date('Y') ?> Celer Market &mdash; Ghana</p>
                         </td>
                     </tr>
                 </table>
